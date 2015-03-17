@@ -17,33 +17,43 @@ public class BuildTree {
     private static class ClauseBuilderVisitor {
 
         public NLGFactory nlgFactory;
+        private int mDepth = 0;
 
         public ClauseBuilderVisitor(NLGFactory nlgFactory) {
             this.nlgFactory = nlgFactory;
         }
 
         public NLGElement visit(Node n) {
+            this.mDepth += 1;
+            NLGElement result = null;
             if (n instanceof PropositionNode) {
-                return this.visitProposition((PropositionNode)n);
+                result = this.visitProposition((PropositionNode)n);
             } else if (n instanceof NotNode) {
-                return this.visitNot((NotNode) n);
+                result = this.visitNot((NotNode) n);
             } else if (n instanceof NextNode) {
-                return this.visitNext((NextNode) n);
+                result = this.visitNext((NextNode) n);
             } else if (n instanceof GlobalNode) {
-                return this.visitGlobal((GlobalNode) n);
+                result = this.visitGlobal((GlobalNode) n);
             } else if (n instanceof AndNode) {
-                return this.visitAnd((AndNode) n);
+                result = this.visitAnd((AndNode) n);
             } else if (n instanceof ImpliesNode) {
-                return this.visitImplies((ImpliesNode) n);
-            } else {
-                return null;
+                result = this.visitImplies((ImpliesNode) n);
             }
+            this.mDepth -= 1;
+            return result;
         }
 
         private NLGElement visitProposition(PropositionNode pn) {
-            NPPhraseSpec subjPhrase = this.nlgFactory.createNounPhrase(pn.subject);
-            NPPhraseSpec objPhrase = this.nlgFactory.createNounPhrase(pn.object);
+            Proposition prop = pn.prop;
+            NPPhraseSpec subjPhrase = this.nlgFactory.createNounPhrase(prop.subject);
+            NPPhraseSpec objPhrase = this.nlgFactory.createNounPhrase(prop.object);
             SPhraseSpec clause = this.nlgFactory.createClause();
+            /*
+            NegatableObjectPhrase clause = (NegatableObjectPhrase)this.nlgFactory.createClause();
+            if (prop instanceof NegatableObjectProposition) {
+                clause.setNegatedObject(((NegatableObjectProposition)prop).negatedObject);
+            }
+            */
             clause.setSubject(subjPhrase);
             clause.setVerb("be");
             clause.setObject(objPhrase);
@@ -100,7 +110,11 @@ public class BuildTree {
 
         private NLGElement visitGlobal(GlobalNode gn) {
             NLGElement child = this.visit(gn.children.get(0));
-            this.addFrontModifier(child, "It always holds that");
+            // If this is the root of the tree, then we believe that the
+            // global "always" behavior is implied, so we don't add the modifier.
+            if (this.mDepth > 1) {
+                this.addFrontModifier(child, "it always holds that");
+            }
             return child;
         }
 
@@ -136,15 +150,58 @@ public class BuildTree {
     /* Propositions */
     private static class PropositionNode extends Node {
        
+        public Proposition prop;
+
+        public PropositionNode(Proposition prop) {
+            this.prop = prop;
+        }
+
+    }
+
+    private static class Proposition {
+
         public String subject;
         public String object;
 
-        public PropositionNode(String subject, String object) {
+        public Proposition(String subject, String object) {
             this.subject = subject;
             this.object = object;
         }
 
     }
+
+    private static class NegatableObjectProposition extends Proposition {
+        
+        public String negatedObject;
+
+        public NegatableObjectProposition(String subject, String object, String negatedObject) {
+            super(subject, object);
+            this.negatedObject = negatedObject;
+        }
+
+    }
+
+    /*
+    private static class NegatableObjectPhrase extends SPhraseSpec {
+
+        private String negatedObject = null;
+
+        public void setNegatedObject(String negatedObject) {
+            this.negatedObject = negatedObject;
+        }
+
+        public void setFeature(String featureName, boolean featureValue) {
+            if (featureName == Feature.NEGATED && this.negatedObject != null) {
+                String oldObject = this.getObject().toString();
+                this.setObject(this.negatedObject);
+                this.negatedObject = oldObject;
+            } else {
+                super.setFeature(featureName, featureValue);
+            }
+        }
+
+    }
+    */
 
     public static void main(String[] args) {
         
@@ -154,16 +211,18 @@ public class BuildTree {
         Realiser realiser = new Realiser(lexicon);
 
         // Build our tree
-        PropositionNode node = new PropositionNode("the door", "closed");
-        PropositionNode node2 = new PropositionNode("the door", "closed");
+        Proposition prop = new Proposition("the door", "closed");
+        PropositionNode node = new PropositionNode(prop);
+        PropositionNode node2 = new PropositionNode(prop);
         NotNode nn = new NotNode();
-        nn.children.add(node2);
+        nn.children.add(node);
         NextNode nxn = new NextNode();
-        nxn.children.add(nn);
+        nxn.children.add(node2);
         AndNode an = new AndNode();
-        an.children.add(node);
+        an.children.add(nn);
         an.children.add(nxn);
-        PropositionNode node3 = new PropositionNode("the light", "on");
+        Proposition prop2 = new Proposition("the light", "on");
+        PropositionNode node3 = new PropositionNode(prop2);
         NextNode nxn2 = new NextNode();
         nxn2.children.add(node3);
         ImpliesNode in = new ImpliesNode();
