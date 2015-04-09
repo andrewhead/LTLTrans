@@ -25,6 +25,6 @@ if __name__ == '__main__':
 
     for i in range(args.iter):
         for j in range(args.icount):
-            print str(i) + '\t' +  varstr('x' + str(j), binary_digits(args.len))
+            print str(i) + '\t' + varstr('x' + str(j), binary_digits(args.len))
         print ""
 
