@@ -1,11 +1,11 @@
 import sys, random
 
 random.seed()
-bool_opers = ["&", "|", "->"]
+bool_opers = ["&", "|", "->", "<->"]
 un_temp_opers = ["F", "G", "X"]
 bin_temp_opers = ["U", "W"]
 
-class Statement:
+class Statement(object):
     def __init__(self, oper = False, var = False, left = False, right = False, neg = False):
         self.operator = oper
         self.left_substatement = left
@@ -18,6 +18,21 @@ class Statement:
             self.is_unary = True
         if self.variable and (self.left_substatement or self.right_substatement or not self.is_unary):
             print("error: ill-formed statement")
+    def copy(self, other):
+        self.operator = other.operator
+        self.is_negative = other.is_negative
+        self.variable = other.variable
+        self.is_unary = other.is_unary
+        if other.left_substatement:
+            left = Statement()
+            left.copy(other.left_substatement)
+            self.left_substatement = left
+        else:
+            self.left_substatement = False
+        if other.right_substatement:
+            right = Statement()
+            right.copy(other.right_substatement)
+            self.right_substatement = right
     def print_statement(self):
         #print self.variable, self.operator,
         if self.is_negative:
@@ -179,7 +194,7 @@ class Statement:
 #Boolean Statements
 
 def Var(var_name):
-    return Statement(var = var_name)
+    return Statement(var = var_name, oper = False, left = False, right = False, neg = False)
 
 def NegVar(var_name):
     return Statement(var = var_name, neg = True)
@@ -201,6 +216,12 @@ def If(s1, s2):
 
 def NegIf(s1, s2):
     return Statement(oper = "->", left = s1, right = s2, neg = True)
+
+def Iff(s1, s2):
+    return Statement(oper = "<->", left = s1, right = s2, neg = False)
+
+def NegIff(s1, s2):
+    return Statement(oper = "<->", left = s1, right = s2, neg = True)
 
 #LTL Statements
 
@@ -301,8 +322,8 @@ e4 = FillTemplates(e4, ["F", "X"], [])
 #print ""
 #print e4.english()
 
-s = Bool( UnTemp( Var("p")), BinTemp(Var("q"), NegVar("r")))
-r = FillTemplates(s, ["F","G", "X"], ["U", "W"], 0.5)
+e5 = Bool( UnTemp( Var("p")), BinTemp(Var("q"), NegVar("r")))
+e5 = FillTemplates(e5, ["F","G", "X"], ["U", "W"], 0.5)
 #r.print_statement()
 #print r.english()
 #Could yield, for example: (Gp -> (q  U ~r)) or (Xp & (q  W ~r))
