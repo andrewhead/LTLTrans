@@ -54,7 +54,8 @@ def parse_sentence(text):
     ''' Process dependencies. '''
     deps = []
     for line in output.split("\n"):
-        match = re.match("([a-z]+)\((.*)?-\d+, (.*)?-\d+\)", line.strip())
+        match = re.match("([a-z]+)\(([a-zA-Z]+-[0-9]+), ([a-zA-Z]+-[0-9]+)\)", line.strip()) #dependencies should include the numbers after the words
+        #match = re.match("([a-z]+)\((.*)?-\d+, (.*)?-\d+\)", line.strip())
         if bool(match):
             dep = TypedDependency(match.group(1), match.group(2), match.group(3))
             deps.append(dep)
