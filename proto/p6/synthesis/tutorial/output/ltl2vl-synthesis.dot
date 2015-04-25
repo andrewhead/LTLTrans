@@ -1,0 +1,25 @@
+digraph "trafficlight.ltl" {
+node [shape=ellipse];
+size = "11,7.5";
+center = true;
+rotate = 90;
+"title" [label="BuechiALTree - trafficlight.ltl",shape=plaintext];
+"n14_1n18_1n16_1" [label="n14_1n18_1n16_1\n()"];
+"n14_1n18_1n16_1" -> "trihl1,fl=0n14_1n18_1n16_10"[label="{hl=1,fl=0}"];
+"trihl1,fl=0n14_1n18_1n16_10" [label="",shape=circle,height=0.5,width=0.5];
+"trihl1,fl=0n14_1n18_1n16_10" -> "n14_1n18_1"[label="D{timer=1}"];
+"trihl1,fl=0n14_1n18_1n16_10" -> "n14_1n18_1n16_1"[label="D{timer=0}"];
+"n18_1n6_0" [label="n18_1n6_0\n()"];
+"n18_1n6_0" -> "trihl1,fl=0n18_1n6_00"[label="{hl=1,fl=0}"];
+"trihl1,fl=0n18_1n6_00" [label="",shape=circle,height=0.5,width=0.5];
+"trihl1,fl=0n18_1n6_00" -> "n18_1n6_0"[label="D{timer=0,car=0}"];
+"trihl1,fl=0n18_1n6_00" -> "n14_1n18_1"[label="D{timer=1}"];
+"trihl1,fl=0n18_1n6_00" -> "n14_1n18_1n16_1"[label="D{car=1,timer=0}"];
+"init-n14_1n18_1" [style=invis]
+"init-n14_1n18_1" -> "n14_1n18_1";
+"n14_1n18_1" [label="n14_1n18_1\n()"];
+"n14_1n18_1" -> "trifl1,hl=0n14_1n18_10"[label="{fl=1,hl=0}"];
+"trifl1,hl=0n14_1n18_10" [label="",shape=circle,height=0.5,width=0.5];
+"trifl1,hl=0n14_1n18_10" -> "n18_1n6_0"[label="D{timer=1}"];
+"trifl1,hl=0n14_1n18_10" -> "n14_1n18_1"[label="D{timer=0}"];
+}

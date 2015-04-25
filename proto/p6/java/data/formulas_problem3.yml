@@ -1,0 +1,64 @@
+- unop:
+    type: global
+    arg:
+      binop:
+        type: implies
+        arg1: 1
+        arg2:
+          unop:
+            type: future
+            arg: 3
+- unop:
+    type: global
+    arg:
+      binop:
+        type: implies
+        arg1: 2
+        arg2:
+          unop:
+            type: future
+            arg: 4
+- unop:
+    type: global
+    arg:
+      unop:
+        type: not
+        arg:
+          binop:
+            type: and
+            arg1: 3
+            arg2: 4
+- unop:
+    type: global
+    arg:
+      unop:
+        type: not
+        arg:
+          binop:
+            type: and
+            arg1: 3
+            arg2: 5
+- unop:
+    type: global
+    arg:
+      unop:
+        type: not
+        arg:
+          binop:
+            type: and
+            arg1: 4
+            arg2: 6
+- unop:
+    type: global
+    arg:
+      binop:
+        type: implies
+        arg1: 3
+        arg2: 6
+- unop:
+    type: global
+    arg:
+      binop:
+        type: implies
+        arg1: 4
+        arg2: 5

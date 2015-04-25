@@ -1,0 +1,29 @@
+- subject: the requester
+  verb: make
+  object: a request
+- subject: the server
+  verb: be
+  object: available
+- subject: the server
+  verb: have
+  object: low load
+- subject: "the client's stress test"
+  verb: begin
+- subject: the screen
+  verb: be
+  object: on
+- subject: the average frame rate
+  verb: be
+  object: "30fps"
+- subject: the task
+  verb: be
+  object: scheduled
+- subject: it
+  verb: be
+  object: scheduled
+- subject: the client
+  verb: make
+  object: a request
+- subject: the request
+  verb: be
+  object: handled
