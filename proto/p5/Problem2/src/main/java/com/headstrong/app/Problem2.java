@@ -16,6 +16,7 @@ public class Problem2 {
         List<Object> formulas = (List<Object>) formulaReader.read();
         List<Object> propositions = (List<Object>) propReader.read();
 
+        System.out.println("Problem 2.  Converting Specifications to Temporal Logic.");
         System.out.println("Write an LTL property for each of the following specifications. " +
                "Make sure to describe in English what each of your atomic propositions mean.");
 
