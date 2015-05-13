@@ -1,17 +1,26 @@
 from ltl_formula import *
+from nltk.corpus import wordnet as wn
 import stanfordparser
 import re
 from nltk.stem import WordNetLemmatizer
 import nltk.tokenize 
-import nltk.tag 
+import nltk.tag
+import itertools
 
 wnl = WordNetLemmatizer()
 
+#Helpful function to print dependencies 
 def show_deps(sentence):
+    if sentence == "I am cool.":
+        return "No, you're not."
     s = stanfordparser.parse_sentence(sentence)
     for t in s:
         print t.name, t.governor, t.dependent
-        
+
+#class Replacement:
+#    def __init__(self, new_formula = False, next_rules = []):
+#        self.formula = new_formula
+        #self.rules = next_rules
 
 #node for a dependency tree
 class Dnode:
@@ -21,12 +30,12 @@ class Dnode:
     def __init__(self, g, d):
         self.governor = g
         self.dependents = d
-        self.relations = []
+        #self.relations = []
     def add_dependent(self, dep, rel):
         self.dependents += [(dep, rel)]
-        self.update_relations() ##BAD FIX THIS
-    def find_dnode(self, word): #finds dnode with governor as given word. returns false, otherwise.
-        print self.governor, word
+        #self.update_relations() ##BAD FIX THIS
+    #finds dnode with governor as given word. returns false, otherwise.
+    def find_dnode(self, word): 
         if self.governor == word:
             return self
         for d in self.dependents:
@@ -44,25 +53,89 @@ class Dnode:
             d[0].print_dnode()
             print ")",
         print "]",
-    def update_relations(self):
+    def get_relations(self):
         if not self.dependents:
             return set([])
         rel = set()
         for d in self.dependents:
-            rel = rel.union( d[0].update_relations() )
+            rel = rel.union( d[0].get_relations() )
             rel = rel.union(set(["(" + d[1] + "," + self.governor + "," + d[0].governor + ")"]))
-        self.relations = list(rel)
-        return rel
-    def get_ltl_from_match(self, old_ltl_node, nums_to_words, root_word, rules, index):
+        #self.relations = list(rel)
+        return list(rel)
+    def get_trace_from_match(self, replacement, nums_to_words, root_word, rules, index):
+        if not nums_to_words:
+            return replacement
+        trace_map = {}
+        print "replacement", replacement, nums_to_words, self
+        for i in nums_to_words:
+            d = self.find_dnode(nums_to_words[i])
+            print i,"dnode",d, d.governor, nums_to_words[i]
+            print d.get_relations()
+            trace_map[i] = d.apply_rules(rules, index, "trace")
+            if not trace_map[i]:
+                return False
+            print "map:",i, trace_map[i]
+        print "map & replacement", trace_map, replacement
+        r = re.sub("([0-9])", lambda m: trace_map[int(m.group(1))], replacement)
+        print "returning:", r
+        trace_map.clear()
+        return r
+    def get_ltl_from_match(self, replacements, nums_to_words, root_word, rules, index, multi_trans = False, applied_rules = set([])):
+        ltl_statements = set()
+        if len(nums_to_words) == 0:
+            for r in replacements:
+                vrbls = r.get_variables() #remove 3 lines once it works
+                for v in vrbls:
+                    assert(type(v.variable) == str)
+                new_ltl = Statement()
+                new_ltl.copy(r)
+                #print new_ltl
+                ltl_statements = ltl_statements.union(set([new_ltl]))
+            #print  "1:", list(ltl_statements)
+            return list(ltl_statements)
+        var_replacements = [[-1]]*(1+ max(nums_to_words)) #will store possible replacements for each variable
+        #print nums_to_words, max(nums_to_words)
+        #determines ltl statements to replace variables with
+        for n in nums_to_words:
+            d = self.find_dnode(nums_to_words[n])
+            new_ind = 0
+            if nums_to_words[n] == root_word:
+                new_ind = index
+            var_replacements[n] = d.apply_rules(rules, new_ind, "ltl", applied_rules = applied_rules)
+        """
+        for v in var_replacements:
+            for v2 in v:
+                if type(v2) != int:
+                    v2.print_statement()
+        """
+        #iterates through all replacement formulas
+        for r in replacements:
+            #iterates through all combinations of replacements for variables
+            for i in itertools.product(*var_replacements):
+                new_ltl = Statement()
+                new_ltl.copy(r)
+                #new_ltl.copy(r.formula)
+                variables = new_ltl.get_variables()
+                #replaces each integer variable with the chosen ltl_statement
+                for v in variables:
+                    is_neg = v.is_negative
+                    v.copy(i[v.variable])
+                    v.is_negative = (v.is_negative != is_neg) #accounts for double-negatives when copying v.variable
+                ltl_statements = ltl_statements.union(set([new_ltl]))
+        return list(ltl_statements)
+        
+        
+    """
+    def get_ltl_from_match(self, replacement, nums_to_words, root_word, rules, index): #takes a matching from variables (ints) to words. Recurses on other rules.
         ltl_node = Statement()
-        if not old_ltl_node:
+        if (not replacement) or (not replacement.formula):
             return False
         #print str(type(old_ltl_node))
         #print old_ltl_node
-        ltl_node.copy(old_ltl_node)
+        ltl_node.copy(replacement.formula)
         if ltl_node.variable:
             if str(ltl_node.variable).isdigit():
-                print "applying", ltl_node.variable, "to", nums_to_words
+                #print "applying", ltl_node.variable, "to", nums_to_words
                 if ltl_node.variable in nums_to_words:
                     new_ind = 0
                     new_root = nums_to_words[ltl_node.variable]
@@ -76,8 +149,6 @@ class Dnode:
                     if not temp:
                         print "Error: no match found after index", new_ind, "for dependency tree with", self.governor, "as root"
                         return False
-                    print temp, new_ind
-                    print temp.is_negative, ltl_node.is_negative, self.governor
                     temp.is_negative = (temp.is_negative != ltl_node.is_negative)
                     return temp
                 else:
@@ -94,18 +165,26 @@ class Dnode:
             return False
         #print "right is", ltl_node.right_substatement 
         return ltl_node
-
-    def apply_rules(self, rules, index = 0): #returns full ltl_tree applying rules to dependency_tree
+    """
+    def apply_rules(self, rules, index = 0, replacement_type = "ltl", multi_translations = False, applied_rules = set([])): #returns full ltl_tree applying rules to dependency_tree
         #print "gov", self.governor
+        new_applied_rules = applied_rules
         while index < len(rules):
-            matches = rules[index].find_match2(self)
+            matches = rules[index].find_match(self, applied_rules = new_applied_rules) 
             if type(matches) == dict:
-                print "Match found:", matches, rules[index].requirements
-                return self.get_ltl_from_match(rules[index].replacement, matches, self.governor, rules, index + 1)
-            print "No match found:", rules[index].requirements
+                #print "Match found:", matches, rules[index].requirements
+                new_applied_rules = new_applied_rules.union(set([rules[index]]))
+                if replacement_type == "ltl":
+                    return self.get_ltl_from_match(rules[index].replacements, matches, self.governor, rules, index + 1, multi_translations, new_applied_rules)
+                elif replacement_type == "trace":
+                    return self.get_trace_from_match(rules[index].replacements, matches, self.governor, rules, index + 1)
+                else:
+                    print "error: please give ltl or trace"
+            #print "No match found:", rules[index].requirements
             index += 1
-        return False
-        
+        return []
+
+       
 
 #requirements: list 3-tuples of form (relation, governor, dependent, is_positive)
         #if not is_positive, then the tuple must not appear for the rule to hold
@@ -115,108 +194,52 @@ class Dnode:
 #rep: ltl node with numbers (say, n) used to represents slots where get_statement(n) replaces slot in ltl tree 
 class DRule(object):
     requirements = []
-    #neg_requirements = []
-    #regex_patterns = list()
-    replacement = False
-    def __init__(self, req, rep):
+    replacements = False
+    
+    def __init__(self, req, rep, neg_rules = set([])):
         self.requirements = []
+        #sets negative_rules
+        #if any of these rules have occured in the computation, the current rule will not occur. 
+        if type(neg_rules) == object:
+            self.negative_rules = set([neg_rules])
+        elif type(neg_rules) == list:
+            self.negative_rules = set(neg_rules)
+        elif type(neg_rules) == set:
+            self.negative_rules = neg_rules
+        else:
+            print "incorrect set of negative rules was supplied."
+            self.negative_rules = set([])
         for r in req:
             self.add_requirement(r)
-        self.replacement = rep
+        if type(rep) == list:
+            self.replacements = rep
+        #elif type(rep) == type(Replacement()):
+        #    self.replacements = [rep]
+        elif type(rep) == type(Statement()) or type(rep) == str:
+            self.replacements = [rep]
+        else:
+            #print rep
+            print "Error: please provide valid replacement formula"
     def add_requirement(self, req):
-        if type(req[1]) == str:
-            r1 = [req[1]]
-        else:
-            r1 = req[1]
-        if type(req[2]) == str:
-            r2 = [req[2]]
-        else:
-            r2 = req[2]
+        new_req = [False]*3
+        for i in range(0, 3):
+            if type(req[i]) == str:
+                new_req[i] = [req[i]]
+            else: #requirement is variable (int) or list of words
+                new_req[i] = req[i]
         if len(req) == 3 or req[3]: #guarantees that negative requirements always come after positive requirements
-            self.requirements.append((req[0], r1, r2, True))
+            self.requirements.append((new_req[0], new_req[1], new_req[2], True))
         else:
             print "negative requirement is given"
-            self.requirements = [(req[0],r1,r2,True)] + self.requirements
-        
-        """
-        self.regex_patterns = list()
-        for r in self.requirements:
-            regex = "[(]"+r[0]+","
-            if str(r[1]).isdigit(): #will take any word
-                regex += "[\w|-]*,"
-            else: #accepts only current word
-                regex += r[1] + "-[0-9]*,"
-            if str(r[2]).isdigit():
-                regex += "[\w|-]*[)]"
-            else:
-                regex += r[2] + "-[0-9]*[)]"
-            self.regex_patterns += [regex]
-        """
-    """
-    def find_match(self, dnode):
-        #print "finding match for", dnode.governor, "with", self.requirements
-        nums_to_words = {}
-        possible_relations = []
-        rels = " ".join(dnode.relations)
-        match_iters = [[]]*len(self.requirements)
-        changed_words = [[None,None,None]]*len(self.requirements)
-        #below is important
-        nums_to_words[1] = dnode.governor
-        for x in range(0,len(self.requirements)):
-            match_iters[x] = re.finditer(self.regex_patterns[x], rels, flags=re.IGNORECASE)
-            if not match_iters[x]: #there is no valid matching
-                return False
-        x = 0
-        current_match = [None]*len(self.requirements)
-        while x < len(self.requirements):
-            if x < 0:
-                return False
-            d1 = self.requirements[x][1]
-            d2 = self.requirements[x][2]
-            if changed_words[x][1]:
-                del nums_to_words[d1]
-            if changed_words[x][2]:
-                del nums_to_words[d2]
-            changed_words[x] = [None,None,None]
-            i = match_iters[x]
-            m = next(i, None)
-            current_match[x] = m
-            if not m:
-                match_iters[x] = re.finditer(self.regex_patterns[x], rels, flags=re.IGNORECASE)
-                x -= 1
-                continue
-            else:
-                #print m.group()
-                t = m.group()
-                t = t.replace(")", "")
-                t = t.replace("(", "")
-                w1 = (t.split(","))[1]
-                w2 = (t.split(","))[2]
-                if x == 0 and w1 != dnode.governor: #first rule must come from root
-                    match_iters[x] = i
-                    continue
-                if str(d1).isdigit():
-                    if d1 in nums_to_words and nums_to_words[d1] != w1: #variables do not match up, move to next slot in current requirement
-                        match_iters[x] = i
-                        continue
-                    elif not d1 in nums_to_words: #number is open slot, filled with w1
-                        changed_words[x][1] = w1
-                        nums_to_words[d1] = w1
-                if str(d2).isdigit():
-                    if d2 in nums_to_words and nums_to_words[d2] != w2:
-                        match_iters[x] = i
-                        continue
-                    elif not d2 in nums_to_words:
-                        changed_words[x][2] = w2
-                        nums_to_words[d2] = w2
-                x += 1
-        return nums_to_words               
-        #return [c.group() for c in current_match]
-    """
+            self.requirements = [(new_req[0], new_req[1], new_req[2], False)] + self.requirements
     #helper function to find_match
     def make_regex(self,req, nums_to_words):
         var_assignments = []
-        regex = "[(]" + req[0] + ",("
+        regex = "[(]"
+        for r in req[0]:
+            regex += r + "|"
+        regex = regex[:-1]
+        regex += ",("
         if type(req[1]) == int:
             if req[1] in nums_to_words:
                 regex += nums_to_words[req[1]]
@@ -238,20 +261,38 @@ class DRule(object):
             regex = regex[:-1]
         regex += ")[)]"
         return regex
-    def find_match2(self,dnode):
+    def find_match(self, dnode, applied_rules = set([])):
         nums_to_words = {}
+        if applied_rules.intersection(self.negative_rules):
+            return False
+        if not self.requirements:
+            return False
         #nums_to_words[1] = dnode.governor
-        rels = " ".join(dnode.relations)
+        rels = " ".join(dnode.get_relations())
         match_iters = [None]*len(self.requirements)
         changed_words = [[None,None,None] for x in range(0,len(self.requirements))] #Tracks which words were assigned numbers in which position in the requirement-list
         req_itr = 0
         current_match = [[None] for x in range(0,len(self.requirements))]
+        root_var = -1
+        #print dnode.governor
+        #print "rels",rels
+        #print "reqs",self.requirements
+        if type(self.requirements[0][1]) == int:
+            root_var = self.requirements[0][1]
+        elif not dnode.governor.split("-")[0] in self.requirements[0][1]: #must match first rule to root of dnode
+            #print "HERE",dnode.governor, self.requirements[0][1]
+            return False
         while req_itr < len(self.requirements):
+            #print req_itr
+            #print changed_words
+            #print current_match
             req = self.requirements[req_itr]
+            #print req
             if req_itr < 0: #It has exhausted all possible matchings. 
                 return False
             current_match[req_itr] = None
             changed_words[0][0] = 1
+            #print self.requirements
             #print changed_words, req[1], nums_to_words
             if changed_words[req_itr][1]:
                 del nums_to_words[req[1]]
@@ -266,13 +307,17 @@ class DRule(object):
             else:
                 m_iter = match_iters[req_itr]
                 amatch = next(m_iter, None)
-            if not amatch: #If there are no possible matches at current dependency-tuple, goes back to last dependency-tuple to find different match
+            #If there are no possible matches at current dependency-tuple, goes back to last dependency-tuple to find different match
+            if not amatch: 
                 match_iters[req_itr] = None
                 #if not req[3]: #if this is a negative dependency-tuple, there is no possible match (so rule could still apply). Moves to next dep-tuple
 #                    req_itr += 1
 #                else:
               #     req_itr -= 1
                 req_itr -= 1
+                continue
+            elif (req[1] == root_var and amatch.group(1) != dnode.governor) or (req[2] == root_var and amatch.group(2) != dnode.governor):
+                match_iters[req_itr] = m_iter
                 continue
             #if amatch and not req[3]: #if a match is found, backtracks (all relevant variables must have been assigned first)
 #                match_iters[req_itr] = None
@@ -290,24 +335,24 @@ class DRule(object):
         return nums_to_words
         #return [c.group() for c in current_match]
             
-                    
+#Rule specific to a variable
 class VarRule(DRule):
-    def __init__(self, rep, root, noun = None, prep = None, pobj = None):
-        self.replacement = rep
+    def __init__(self, replacements, root, noun = None, prep = None, pobj = None):
+        DRule.__init__(self, [], replacements)
         self.root = root
         self.noun = noun
         self.prep = prep
         self.pobl = pobj
         self.requirements = []
         if noun:
-            self.add_requirement(("nsubj",root,noun,True))
+            self.add_requirement((["nsubj", "nsubjpass"],root,noun,True))
         if prep:
             self.add_requirement(("prep",root,prep,True))
             if pobj:
                 self.add_requirement(("pobj",prep,pobj,True))
-    def find_match2(self,dnode):
+    def find_match(self,dnode, applied_rules = set([])):
         if self.requirements:
-            return DRule.find_match2(self,dnode)
+            return DRule.find_match(self,dnode, applied_rules)
         elif self.root == dnode.governor.split("-")[0]: #if we only want to match root up rather than an entire dependency tree
             return {}
         else:
@@ -316,18 +361,19 @@ class VarRule(DRule):
     
     
         
-                        
-            
+
 
     
 class Converter:
     wordmap = {} #maps words to their dependency nodes
     prop_vars = []
     sentence = ""
-    def __init__(self, sentence, variables):
+    
+    def __init__(self, sentence, variables, multi_translations = False): 
         self.prop_vars = variables
         self.wordmap = {}
-        self.sentence = sentence
+        self.sentence = self.expand_contractions(sentence)
+        self.multiple_translations = multi_translations
         relations = stanfordparser.parse_sentence(sentence)
 
         #assembles part of speech map
@@ -352,24 +398,47 @@ class Converter:
         for l in t:
             #print "adding:", l[1], l[2], l[0]
             self.wordmap[l.governor].add_dependent(self.wordmap[l.dependent], l.name)
+    def expand_contractions(self, sentence):
+        new_sentence = re.sub("can't", "cannot", sentence, flags=re.IGNORECASE)
+        new_sentence = re.sub("won't", "will not", new_sentence, flags=re.IGNORECASE)
+        new_sentence = re.sub("isn't", "is not", new_sentence, flags=re.IGNORECASE)
+        new_sentence = re.sub("it's", "it is", new_sentence, flags=re.IGNORECASE)
+        new_sentence = re.sub("aren't", "are not", new_sentence, flags=re.IGNORECASE)
+        new_sentence = re.sub("wouldn't", "would not", new_sentence, flags=re.IGNORECASE)
+        new_sentence = re.sub("shouldn't", "should not", new_sentence, flags=re.IGNORECASE)
+        new_sentence = re.sub("ain't", "is not", new_sentence, flags=re.IGNORECASE)
+        new_sentence = re.sub("they're", "they are", new_sentence, flags=re.IGNORECASE)
+        new_sentence = re.sub("we're", "we are", new_sentence, flags=re.IGNORECASE)
+        new_sentence = re.sub("we'd", "we would", new_sentence, flags=re.IGNORECASE)
+        return new_sentence
+
         
-    def add_variable(self, name, description):
+    def add_variable(self, name, description): 
         temp = Converter(description, [])
-        amap = DRule([("nsubj",1,2)], False).find_match2(temp.wordmap["ROOT-0"])
+        amap = DRule([("nsubj",1,2)], False).find_match(temp.wordmap["ROOT-0"])
         if amap:
             self.prop_vars.append(DRule([("nsubj",str(amap[1].split("-")[0]),str(amap[2].split("-")[0]))], Var(name)))
-            
-    def get_statement(self):
-        current_statement = False
+    def get_statement(self, replacement_type = "ltl"): #Returns the LTL statement corresponding to the given English sentence
+        current_statements = []
         for d in self.wordmap["ROOT-0"].dependents:
-            s = d[0].apply_rules(Rules + self.prop_vars)
-            if not s:
-                continue
-            if current_statement:
-                current_statement = And(current_statement, s)
+            if replacement_type == "ltl":
+                ltl_statements = d[0].apply_rules(LTL_Rules + self.prop_vars, 0, "ltl", multi_translations = self.multiple_translations)
+            elif replacement_type == "trace":
+                ltl_statements = d[0].apply_rules(Trace_Rules + self.prop_vars, 0, "trace", multi_translations = self.multiple_translations)
             else:
-                current_statement = s
-        return current_statement
+                print "please input a valid conversion type (ltl, trace)"
+                return "error"
+            if not ltl_statements:
+                continue
+            if current_statements:
+                new_statements = []
+                for p in itertools.product(*[current_statement, ltl_statements]):
+                    print "p is", p
+                    new_statements.append(And(p[0], p[1]))
+                current_statements = new_statements
+            else:
+                current_statements = ltl_statements
+        return current_statements
     #Determines the type (noun,verb,adjective,or adverb) for a given word, based on its part-of-speech tag
     def get_word_type(self, pos_tag):
         if pos_tag in ["NN", "NNS", "NNP", "NNPS"]:
@@ -383,7 +452,7 @@ class Converter:
         else:
             #print "Part of Speech", pos_tag, "not recognized"
             return "n"
-    def lemmatize_relations(self, relations, pos_map):
+    def lemmatize_relations(self, relations, pos_map): #Replaces words in relations with lemmatized version (removes tense and pluralization)
         new_rels = []
         for r in relations:
             new_gov = ""
@@ -419,38 +488,51 @@ class Converter:
 #print d1.relations
 
 
-
+R30 = DRule([("prep", 1, ["at", "in", "during","for"]),
+             ("amod", ["moment","step","point","second", "time"], ["first", "initial"]),
+             ("pobj", ["at","in","during","for"], ["moment","step","point","second", "time"])],
+            Var(1))
+R31 = DRule([("advmod", 1, ["initially", "currently", "now"])], Var(1))
 R1 = DRule([("advcl",1,2), ("mark",2,"until")], U(Var(1),Var(2))) #p1 U p2
 R14 = DRule([("advcl",1,2), ("mark", 2, "unless")], If(Var(2), NegVar(1))) #p2 -> ~p1
 R5 = DRule([("advcl",1,2), ("mark",2,"while")], W(Var(1), NegVar(2))) #p1 W !p2
 R6 = DRule([("advcl",1,2), ("advmod",2,"whenever")], G(If(Var(2),Var(1)))) #G(p2 -> p1)
-R4 = DRule([("advmod",1,"always")], G(Var(1))) #Gp
-R17 = DRule([("prep", 1, ["at", "in", "during"]),
-             ("det", ["moment","step","point","second"], ["every", "all"]),
-             ("pobj", ["at","in","during"], ["moment","step","point","second"])],
+R17 = DRule([("prep", 1, ["at", "in", "during","for"]),
+             ("det", ["moment","step","point","second", "time", "frame"], ["every", "all", "any"]),
+             ("pobj", ["at","in","during", "for"], ["moment","step","point","second","time", "frame"])],
             G(Var(1)))
-R18 = DRule([("prep", 1, ["at", "in", "during"]),
-             ("det", ["moment","step","point","second"], "some"),
-             ("pobj", ["at","in","during"], ["moment","step","point","second"])],
+R21 = DRule([("ccomp","case",1),("advmod","case","always")], G(Var(1)))
+R22 = DRule([("ccomp","case",1),("neg","case","never")], G(NegVar(1)))
+R23 = DRule([("ccomp","case",1),("advmod","case", ["always", "sometimes"])], F(Var(1)))
+R18 = DRule([("prep", 1, ["at", "in", "during","for"]),
+             ("det", ["moment","step","point","second", "time", "frame"], "some"),
+             ("pobj", ["at","in","during","for"], ["moment","step","point","second", "time", "frame"])],
             F(Var(1)))
-#R21 = DRule([("aux",1,"will"),("advcl",1,2),("mark",2,"until",False)],F(Var(1)))
-#R22 = DRule([("aux",1,"will"),("advcl",1,2,False)], F(Var(1)))
-R7 = DRule([("advmod",1,"eventually")], F(Var(1))) #Gp
+#R24 = DRule([("aux", 1, "will"),("advmod", 1, "eventually", False)], [Var(1), F(Var(1))])
 R8 = DRule([("advmod",1,"infinitely"),("advmod",1,"often")], G(F(Var(1)))) #GFp #
 
-R9 = DRule([("advcl",1,2),("mark",2,"if")], If(Var(2),Var(1))) #p2 -> p1
+R29 = DRule([("advcl",1,2),("mark",2,["if","when"]),("advmod",2,"now")], If(Var(2), Var(1)))
+R9 = DRule([("advcl",1,2),("mark",2, "if")], [If(Var(2),Var(1)), G(If(Var(2),Var(1)))], [R17, R21, R22, R23, R29, R30, R31]) #p2 -> p1, or G(p2 -> p1)
+R28 = DRule([("advcl",1,2),("mark",2,["if", "when"])], If(Var(2),Var(1)), [R9, R29])
+#R24 = DRule([("aux", 1, "will")], [Var(1), F(Var(1))])
+R7 = DRule([("advmod",1,"eventually")], F(Var(1))) #Gp
+R4 = DRule([("advmod",1,"always")], G(Var(1))) #Gp
 R10 = DRule([("cc",1,"and"),("conj",1,2)],And(Var(1),Var(2))) #p1 & p2
 R11 = DRule([("cc",1,"or"),("conj",1,2)], Or(Var(1),Var(2))) #p1 | p2
-R19 = DRule([("prep", 1, ["at", "in", "during"]),
-             ("amod", ["moment","step","point","second"], ["next", "following"]),
-             ("pobj", ["at","in","during"], ["moment","step","point","second"])],
+R19 = DRule([("prep", 1, ["at", "in", "during", "for"]),
+             ("amod", ["moment","step","point","second", "time", "frame"], ["next", "following"]),
+             ("pobj", ["at","in","during", "for"], ["moment","step","point","second", "time", "frame"])],
             X(Var(1)))
 R12 = DRule([("advmod", 1, "next")], X(Var(1)))
 R15 = DRule([("parataxis", 1, 2), ("advmod", 2, "then")], And(Var(1),X(Var(2)))) # p1 & Xp2
 R16 = DRule([("ccomp", 1, 2), ("advmod", 2, "then")], And(Var(1), X(Var(2)))) #possibly a mistake in SP
 R20 = DRule([("xcomp", "stop", 1)], NegVar(1))
+R32 = DRule([("dobj",1,["time"]), ("predet",["time"],"all")], G(Var(1))) ###ADD STUFFFFF
 R2 = DRule([("neg",1,"never")], G(NegVar(1))) #G!p
 R3 = DRule([("neg",1,["not","n't"])],NegVar(1)) #!p
+R27 = DRule([("aux", 1, "will")], [F(Var(1)), Var(1)], [R4, R7, R8, R18, R21, R22, R14, R1, R2, R30, R31])
+R25 = DRule([("ccomp", "true", 1)], Var(1))
+R26 = DRule([("ccomp", "false", 1)], NegVar(1))
 
 #Problem: The robot never stops killing.
 
@@ -460,7 +542,7 @@ s2 = "The robot moves while the light is not flashing." #m W f
 s3 = "The robot moves, unless the light is flashing." # f -> ~m
 
 
-Rules = [R1, R14, R5, R6, R4, R7, R8, R9, R10, R11, R12, R15, R16, R17, R18, R19, R20, R2, R3]
+LTL_Rules = [R30, R31, R1, R14, R5, R6, R21, R22, R23, R8, R17, R29, R9, R28, R7, R4, R10, R11, R12, R15, R16, R18, R19, R20, R32, R2, R3, R27, R25, R26]
 
 """
 sentence = raw_input("What would you like to parse?: ")
@@ -483,7 +565,6 @@ def run(sentence = "If the robot kills, it loves"):
     #print sentence
     variables = []
     c = Converter(sentence, [])
-    print c.wordmap
     """
     while True:
         var = raw_input("Define a variable as 'name: description': ")
@@ -491,17 +572,16 @@ def run(sentence = "If the robot kills, it loves"):
             break
         m = var.split(":")
         m[1]= m[1].strip()
-        print m[0],m[1]
+        print m[0],m[1]d
         c.add_variable(m[0],m[1])
     for p in c.prop_vars:
         print "k",p.requirements
     print "prop_Vars", c.prop_vars
     """
    # c.prop_vars = [DRule([("nsubj","move",0)],Var("m")),DRule([("nsubj","flash",0)],Var("f"))]
-    c.prop_vars = [VarRule(Var("m"),"move"), VarRule(Var("f"),"flash")]
+    c.prop_vars = [VarRule(Var("c"),"chew"), VarRule(Var("k"),"kick")]
     r = c.get_statement()
     if r:
-        print r.left_substatement, r.right_substatement, r.operator
         print sentence, " ---> ",
         r.print_statement()
         t = Statement()
@@ -516,6 +596,48 @@ def run(sentence = "If the robot kills, it loves"):
 
 #c = Converter("The robot never moves", [])
 #print c.wordmap["ROOT-0"].dependents[0][0]
-#r = R2.find_match2(c.wordmap["ROOT-0"].dependents[0][0])
+#r = R2.find_match(c.wordmap["ROOT-0"].dependents[0][0])
+
+
+########## TRACES ###############
+V1 = DRule([("nsubj","flip","switch")], "f")
+V2 = DRule([("nsubj", "move", "robot")], "b")
+
+Trace_Rules = [
+    DRule([("parataxis",4,2)], "42"),
+    DRule([("advmod",1,"twice")], "11"),
+    DRule([("tmod",1,"time"),("num","time","two")], "11"),
+    DRule([("tmod",1,"time"),("num","time","three")], "111"),
+    DRule([("tmod",1,"time"),("num","time","four")], "1111"),
+    DRule([("dobj",1,"time"),("num","time","two")], "11"), #This may be a fault in the stanford parser
+    DRule([("dobj",1,"time"),("num","time","three")], "111"),
+    DRule([("dobj",1,"time"),("num","time","four")], "1111"),
+    DRule([("prep",1,"for"),("pobj", "for", "step"),("num", "step", "two")], "11"),
+    DRule([("advmod",1,["repeatedly", "continuously"])], "(1)w"),
+    DRule([("neg", 1, ["not","n't"])], "~1")
+    ]
+"""
+print "A"
+VAR = VarRule(Var("m"), "move", noun = "robot")
+c = Converter("The robot will move.", [VAR], LTL_Rules)
+r = c.get_statement()
+print "Translations:"
+for a in r:
+    a.print_statement()
+    print ""
+"""
+#class TraceRule(DRule):
+#    pass
+
+#class TraceConverter(Converter):
+ #   def get_trace
+            
+def print_ltl(ltl_statements):
+    if not ltl_statements:
+        print "No translations"
+    print "Translations: "
+    for l in ltl_statements:
+        l.print_statement()
+        print ""
 
 

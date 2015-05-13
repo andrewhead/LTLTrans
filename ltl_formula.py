@@ -1,4 +1,7 @@
-import sys, random
+from __future__ import unicode_literals
+import sys, random, os
+import subprocess
+import logging
 
 random.seed()
 bool_opers = ["&", "|", "->", "<->"]
@@ -18,6 +21,48 @@ class Statement(object):
             self.is_unary = True
         if self.variable and (self.left_substatement or self.right_substatement or not self.is_unary):
             print("error: ill-formed statement")
+    def get_var_list(self):
+        var_list = []
+        if self.variable:
+            var_list.append(self.variable)
+        if self.left_substatement:
+            var_list += self.left_substatement.get_var_list()
+        if self.right_substatement:
+            var_list += self.right_substatement.get_var_list()
+        return var_list
+    def check_ltl_equivalence(self, other_ltl):
+        var_list1 = set(self.get_var_list())
+        var_list2 = set(other_ltl.get_var_list())
+        if var_list1.symmetric_difference(var_list2):
+            return False #they don't contain all the same variables, so they must not be equivalent
+        f = open('ltl_equivalence_check.smv', 'w')
+        f.write("MODULE main \n VAR \n")
+        for v in var_list1:
+            f.write(v)
+            f.write(" : boolean;\n")
+        f.write("LTLSPEC (")
+        self.print_statement(f, True)
+        f.write(" <-> ")
+        other_ltl.print_statement(f, True)        
+        f.write(" ) \n")
+        f.close()
+        out = subprocess.check_output(["/opt/local/bin/nusmv", "ltl_equivalence_check.smv"])
+        return out.split()[-1] == "true"
+        #os.system("/opt/local/bin/nusmv ltl_equivalence_check.smv")
+        #read value somehow
+
+    #gets list pointing to all variable-nodes in the statement
+    def get_variables(self):
+        if self.variable:
+            return [self]
+        variables = []
+        if self.left_substatement:
+            variables += self.left_substatement.get_variables()
+        if self.right_substatement:
+            variables += self.right_substatement.get_variables()
+        return variables
+        
+        
     def copy(self, other):
         self.operator = other.operator
         self.is_negative = other.is_negative
@@ -33,21 +78,25 @@ class Statement(object):
             right = Statement()
             right.copy(other.right_substatement)
             self.right_substatement = right
-    def print_statement(self):
+    def print_statement(self, outf = sys.stdout, spaced = False):
         #print self.variable, self.operator,
         if self.is_negative:
-            sys.stdout.write("~")
+            outf.write("!")
+            if spaced:
+                outf.write(" ")
         if self.variable:
-            sys.stdout.write(self.variable)
+            outf.write(self.variable)
         elif self.is_unary:
-            sys.stdout.write(self.operator)
-            self.left_substatement.print_statement()
+            outf.write(self.operator)
+            if spaced:
+                outf.write(" ")
+            self.left_substatement.print_statement(outf, spaced)
         else:
-            sys.stdout.write("(")
-            self.left_substatement.print_statement()
-            print "", self.operator, "",
-            self.right_substatement.print_statement()
-            sys.stdout.write(")")
+            outf.write("(")
+            self.left_substatement.print_statement(outf, spaced)
+            outf.write(" " + self.operator + " ")
+            self.right_substatement.print_statement(outf, spaced)
+            outf.write(")")
     def distribute_negatives(self, opers = bin_temp_opers + bool_opers + un_temp_opers):
         negative_operator = {"&":"|", "|":"&", "U":"R", "R":"U", "F":"G", "G":"F", "X":"X"} #Figure out what to do for W
         if self.variable:
@@ -297,6 +346,9 @@ def FillTemplates(temp, unary_operators, binary_operators, neg_prob = 0):
         
         
 #Examples
+
+l1 = NegF(Var("p"))
+l2 = G(NegVar("p"))
 
 # (p|~q)&(q->~r)
 e1 = And( Or(Var("p"), NegVar("q")), If(Var("q"), NegVar("r")))
