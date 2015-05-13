@@ -1,0 +1,28 @@
+digraph "trafficlight.ltl" {
+node [shape=ellipse];
+size = "11,7.5";
+center = true;
+rotate = 90;
+"title" [label="BuechiALTree - trafficlight.ltl",shape=plaintext];
+"n8_1n11_1-n8_1" [label="n8_1n11_1-n8_1\n()"];
+"n8_1n11_1-n8_1" -> "trign1,rn=0,re=1,ge=0n8_1n11_1-n8_10"[label="{gn=1,rn=0,re=1,ge=0}"];
+"trign1,rn=0,re=1,ge=0n8_1n11_1-n8_10" [label="",shape=circle,height=0.5,width=0.5];
+"trign1,rn=0,re=1,ge=0n8_1n11_1-n8_10" -> "n11_1"[label="D{ce=0}"];
+"trign1,rn=0,re=1,ge=0n8_1n11_1-n8_10" -> "n7_1n11_1"[label="D{ce=1}"];
+"n7_1n11_1-n7_1" [label="n7_1n11_1-n7_1\n()"];
+"n7_1n11_1-n7_1" -> "trirn1,ge=1,gn=0,re=0n7_1n11_1-n7_10"[label="{rn=1,ge=1,gn=0,re=0}"];
+"trirn1,ge=1,gn=0,re=0n7_1n11_1-n7_10" [label="",shape=circle,height=0.5,width=0.5];
+"trirn1,ge=1,gn=0,re=0n7_1n11_1-n7_10" -> "n8_1n11_1"[label="D{cn=1}"];
+"trirn1,ge=1,gn=0,re=0n7_1n11_1-n7_10" -> "n11_1"[label="D{cn=0}"];
+"init-n11_1" [style=invis]
+"init-n11_1" -> "n11_1";
+"n11_1" [label="n11_1\n()"];
+"n11_1" -> "trirn1,ge=1,gn=0,re=0n11_10"[label="{rn=1,ge=1,gn=0,re=0}"];
+"trirn1,ge=1,gn=0,re=0n11_10" [label="",shape=circle,height=0.5,width=0.5];
+"trirn1,ge=1,gn=0,re=0n11_10" -> "n11_1"[label="D{cn=0}"];
+"trirn1,ge=1,gn=0,re=0n11_10" -> "n8_1n11_1-n8_1"[label="D{cn=1}"];
+"n8_1n11_1" [label="n8_1n11_1\n()"];
+"n8_1n11_1" -> "n8_1n11_1-n8_1"[label="D{}{rn=1,ge=1,gn=0,re=0}"];
+"n7_1n11_1" [label="n7_1n11_1\n()"];
+"n7_1n11_1" -> "n7_1n11_1-n7_1"[label="D{}{gn=1,rn=0,re=1,ge=0}"];
+}
