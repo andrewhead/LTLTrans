@@ -1,5 +1,8 @@
 *.class
 *.swp
-~*.xlsx
-target/
+*~.xlsx
+*.pyc
 .DS_Store
+
+target/
+venv/

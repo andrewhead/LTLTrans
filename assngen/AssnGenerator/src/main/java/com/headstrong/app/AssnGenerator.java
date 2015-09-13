@@ -29,6 +29,13 @@ public class AssnGenerator {
         problem4(
             "data/behaviors_p4.yml"
         );
+        problem2(
+            "data/formulas_paper_ltl1.yml",
+            "data/propositions_paper_ltl1.yml"
+        );
+        problem4(
+            "data/behaviors_paper.yml"
+        );
     }
 
     public static void problem1(String formulasPath) throws IOException {

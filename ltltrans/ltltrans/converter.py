@@ -375,6 +375,8 @@ class Converter:
         self.sentence = self.expand_contractions(sentence)
         self.multiple_translations = multi_translations
         relations = stanfordparser.parse_sentence(sentence)
+        for r in relations:
+            print r.name, r.governor, r.dependent
 
         #assembles part of speech map
         pos_map = {}
@@ -414,8 +416,9 @@ class Converter:
 
         
     def add_variable(self, name, description): 
-        temp = Converter(description, [])
-        amap = DRule([("nsubj",1,2)], False).find_match(temp.wordmap["ROOT-0"])
+        temp = Converter(str(description), [])
+        amap = DRule([("nsubj",1,2)], Statement()).find_match(temp.wordmap["ROOT-0"])
+        print "amap", amap
         if amap:
             self.prop_vars.append(DRule([("nsubj",str(amap[1].split("-")[0]),str(amap[2].split("-")[0]))], Var(name)))
     def get_statement(self, replacement_type = "ltl"): #Returns the LTL statement corresponding to the given English sentence
