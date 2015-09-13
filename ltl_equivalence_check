@@ -1,0 +1,5 @@
+MODULE main 
+ VAR 
+q : boolean;
+p : boolean;
+SPEC (G(p -> Xq) <-> F(p U q) ) 

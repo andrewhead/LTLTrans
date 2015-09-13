@@ -337,7 +337,7 @@ class DRule(object):
             
 #Rule specific to a variable
 class VarRule(DRule):
-    def __init__(self, replacements, root, noun = None, prep = None, pobj = None):
+    def __init__(self, replacements, root, noun = None, prep = None, pobj = None, acomp = None, dobj = None):
         DRule.__init__(self, [], replacements)
         self.root = root
         self.noun = noun
@@ -350,6 +350,10 @@ class VarRule(DRule):
             self.add_requirement(("prep",root,prep,True))
             if pobj:
                 self.add_requirement(("pobj",prep,pobj,True))
+        if acomp:
+            self.add_requirement(("acomp", root, acomp))
+        if dobj:
+            self.add_requirement(("dobj", root, dobj))
     def find_match(self,dnode, applied_rules = set([])):
         if self.requirements:
             return DRule.find_match(self,dnode, applied_rules)
@@ -494,7 +498,7 @@ R30 = DRule([("prep", 1, ["at", "in", "during","for"]),
             Var(1))
 R31 = DRule([("advmod", 1, ["initially", "currently", "now"])], Var(1))
 R1 = DRule([("advcl",1,2), ("mark",2,"until")], U(Var(1),Var(2))) #p1 U p2
-R14 = DRule([("advcl",1,2), ("mark", 2, "unless")], If(Var(2), NegVar(1))) #p2 -> ~p1
+R14 = DRule([("advcl",1,2), ("mark", 2, "unless")], Iff(Var(2), NegVar(1))) #p2 -> ~p1
 R5 = DRule([("advcl",1,2), ("mark",2,"while")], W(Var(1), NegVar(2))) #p1 W !p2
 R6 = DRule([("advcl",1,2), ("advmod",2,"whenever")], G(If(Var(2),Var(1)))) #G(p2 -> p1)
 R17 = DRule([("prep", 1, ["at", "in", "during","for"]),
