@@ -1,0 +1,4 @@
+MODULE main 
+ VAR 
+p : boolean;
+LTLSPEC (! F p <-> G ! p ) 

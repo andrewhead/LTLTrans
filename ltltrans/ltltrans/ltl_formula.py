@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 import sys, random, os
 import subprocess
 import logging
+import yaml
 
 random.seed()
 bool_opers = ["&", "|", "->", "<->"]
@@ -61,8 +62,6 @@ class Statement(object):
         if self.right_substatement:
             variables += self.right_substatement.get_variables()
         return variables
-        
-        
     def copy(self, other):
         self.operator = other.operator
         self.is_negative = other.is_negative
@@ -238,7 +237,33 @@ class Statement(object):
         else:
             return "ERROR"
         return sentence
-        
+    def get_yaml_dict(self, vars_to_ints):
+        ops_to_keywords = {"G":"global", "F":"future", "X":"next", "&":"and", "|":"or", "->":"implies", "U":"until"}
+        return_value = {}
+        #return {'unop':{'type':'not', 'arg':self.vars_to_ints[variable]}}
+        if self.variable:
+            return_value = vars_to_ints[self.variable]
+        elif self.is_unary:
+            return_value = {'unop':{}}
+            return_value['unop']['type'] = ops_to_keywords[self.operator]
+            return_value['unop']['arg'] = self.left_substatement.get_yaml_dict(vars_to_ints)
+        else:
+            return_value = {'binop':{}}
+            return_value['binop']['type'] = ops_to_keywords[self.operator]
+            return_value['binop']['arg1'] = self.left_substatement.get_yaml_dict(vars_to_ints)
+            return_value['binop']['arg2'] = self.right_substatement.get_yaml_dict(vars_to_ints)
+
+        if self.is_negative:
+            return_value = {'unop':{'type':'not', 'arg':return_value}}
+        return return_value
+    
+    def yaml_convert_to_english(self, vars_to_ints):
+        ltl_dict = self.get_yaml_dict(vars_to_ints)
+        with open('yabadabadoo.yml', 'w') as tf:
+            tf.write(yaml.dump(ltl_dict, default_flow_style=False))
+        tf.close()
+        #with open('tempfile.yml', 'r') as tf:
+            
                 
 #Boolean Statements
 
@@ -343,7 +368,7 @@ def FillTemplates(temp, unary_operators, binary_operators, neg_prob = 0):
     else:
         s.operator = temp.operator
     return s
-        
+
         
 #Examples
 

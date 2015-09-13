@@ -1,0 +1,7 @@
+det(beatings-2, The-1)
+nsubj(continue-4, beatings-2)
+aux(continue-4, will-3)
+root(ROOT-0, continue-4)
+mark(improves-7, until-5)
+nsubj(improves-7, morale-6)
+advcl(continue-4, improves-7)
