@@ -55,6 +55,7 @@ public class AssnGenerator {
         System.out.println();
     }
 
+    @SuppressWarnings("unchecked")
     public static void problem2(String formulasPath, String propositionsPath) throws Exception {
         // Load propositions and formulas
         YamlReader formulaReader = new YamlReader(new FileReader(formulasPath));
@@ -76,6 +77,7 @@ public class AssnGenerator {
         System.out.println("\n");
     }
 
+    @SuppressWarnings("unchecked")
     public static void problem3(String purpose, String formulasPath, String propositionsPath) throws Exception {
 
         YamlReader formulaReader = new YamlReader(new FileReader(formulasPath));
@@ -97,15 +99,16 @@ public class AssnGenerator {
         System.out.println();
     }
 
+    @SuppressWarnings("unchecked")
     public static void problem4(String behaviorsPath) throws Exception {
         YamlReader behaviorsReader = new YamlReader(new FileReader(behaviorsPath));
-        Map behaviorSpec = (Map) behaviorsReader.read();
+        Map<String,Object> behaviorSpec = (Map<String,Object>) behaviorsReader.read();
 
         List<Object> inputs = (List<Object>) behaviorSpec.get("inputs");
         List<Object> outputs = (List<Object>) behaviorSpec.get("outputs");
         List<List<List<String>>> behaviors = (List<List<List<String>>>) behaviorSpec.get("behaviors");
 
-        List<Map> actors = new ArrayList<Map>();
+        List<Map<String,Object>> actors = new ArrayList<Map<String,Object>>();
         for (Object i: inputs) actors.add((Map) i);
         for (Object o: outputs) actors.add((Map) o);
 
@@ -126,7 +129,7 @@ public class AssnGenerator {
             System.out.print("(" + subproblem + ") ");
             for (int i = 0; i < behavior.size(); i++) {
                 List<String> actorBehavior = behavior.get(i);
-                Map actor = actors.get(i);
+                Map<String,Object> actor = actors.get(i);
                 int[] sequence = new int[actorBehavior.size()];
                 for (int j = 0; j < actorBehavior.size(); j++) {
                     sequence[j] = Integer.parseInt(actorBehavior.get(j));
@@ -144,7 +147,7 @@ public class AssnGenerator {
         System.out.println();
     }
 
-    private static void printActor(Map actor) {
+    private static void printActor(Map<String,Object> actor) {
         SourceType type = getType((String) actor.get("type"));
         List<String> values = getValues(type);
         String valuesString = "";

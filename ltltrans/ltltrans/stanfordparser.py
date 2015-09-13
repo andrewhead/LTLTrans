@@ -8,10 +8,10 @@ import subprocess
 import os.path
 import re
 from tempfile import NamedTemporaryFile
+from django.conf import settings
 
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
-SP_PATH = "/usr/local/Cellar/stanford-parser/3.4/libexec"
 
 
 class TypedDependency(object):
@@ -36,16 +36,16 @@ def parse_sentence(text):
     try:
         output = subprocess.check_output(
             "java " +
-            "-cp " + SP_PATH + "/stanford-parser.jar " +
+            "-cp " + os.path.join(settings.DEPS_DIR, "stanford-parser.jar") + " " +
             "-mx200m " +
             "edu.stanford.nlp.parser.lexparser.LexicalizedParser " +
             "-retainTmpSubCategories " +
             "-outputFormat \"typedDependencies\" " +
             "-outputFormatOptions \"basicDependencies\" " +
-            "englishPCFG.ser.gz " +
+            os.path.join(settings.DEPS_DIR, "englishPCFG.ser.gz") + " " +
             os.path.abspath(tempFile.name),
-        shell=True,
-        stderr=subprocess.STDOUT)
+            shell=True,
+            stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as c:
         print "========ERROR running Stanford Parser========"
         print c.output
@@ -54,8 +54,8 @@ def parse_sentence(text):
     ''' Process dependencies. '''
     deps = []
     for line in output.split("\n"):
-        match = re.match("([a-z]+)\(([a-zA-Z]+-[0-9]+), ([a-zA-Z]+-[0-9]+)\)", line.strip()) #dependencies should include the numbers after the words
-        #match = re.match("([a-z]+)\((.*)?-\d+, (.*)?-\d+\)", line.strip())
+        # dependencies should include the numbers after the words
+        match = re.match("([a-z]+)\(([a-zA-Z]+-[0-9]+), ([a-zA-Z]+-[0-9]+)\)", line.strip())
         if bool(match):
             dep = TypedDependency(match.group(1), match.group(2), match.group(3))
             deps.append(dep)
@@ -72,4 +72,3 @@ if __name__ == '__main__':
     print "=====Dependencies====="
     for dep in deps:
         print "{type}: {gov}, {dep}".format(type=dep.name, gov=dep.governor, dep=dep.dependent)
-

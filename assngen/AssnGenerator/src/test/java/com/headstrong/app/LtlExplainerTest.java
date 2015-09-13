@@ -18,12 +18,13 @@ public class LtlExplainerTest extends TestCase {
     List<Object> propositions;
     LtlExplainer explainer;
 
+    @SuppressWarnings("unchecked")
     public LtlExplainerTest(String testName) throws Exception {
         super(testName);
 
         // Load some preset propositions and formulas
-        formulaReader = new YamlReader(new FileReader("data/formulas.yml"));
-        propReader = new YamlReader(new FileReader("data/propositions.yml"));
+        formulaReader = new YamlReader(new FileReader("data/formulas_problem2_test.yml"));
+        propReader = new YamlReader(new FileReader("data/propositions_problem2_test.yml"));
         formulas = (List<Object>) formulaReader.read();
         propositions = (List<Object>) propReader.read();
         explainer = new LtlExplainer(propositions);
@@ -33,6 +34,7 @@ public class LtlExplainerTest extends TestCase {
         return new TestSuite( LtlExplainerTest.class );
     }
 
+    @SuppressWarnings("unchecked")
     public void testGlobalImplies() throws Exception {
         YamlReader formulaYaml = new YamlReader(
             "unop:\n" +
@@ -62,6 +64,7 @@ public class LtlExplainerTest extends TestCase {
         );
     }
 
+    @SuppressWarnings("unchecked")
     public void testGlobalNot() throws Exception {
         YamlReader formulaYaml = new YamlReader(
             "unop:\n" +
