@@ -14,3 +14,28 @@ SECRET_KEY = '2h&x4w@-s$9328zv%nss=e^ru-q!f2=!#)ek9i87ur208pu+#2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 ALLOWED_HOSTS = []
+
+
+# LOGGING
+LOGGING = {
+    'version': 1,
+    'formatters': {
+        'verbose': {
+            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S",
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'WARNING',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'propagate': True,
+            'level': 'WARNING',
+        },
+    },
+}

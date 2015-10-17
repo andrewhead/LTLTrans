@@ -12,17 +12,17 @@ else:
 def serializedATN():
     with StringIO() as buf:
         buf.write(u"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3")
-        buf.write(u"\17*\4\2\t\2\4\3\t\3\4\4\t\4\3\2\3\2\3\2\5\2\f\n\2\3")
+        buf.write(u"\20*\4\2\t\2\4\3\t\3\4\4\t\4\3\2\3\2\3\2\5\2\f\n\2\3")
         buf.write(u"\2\3\2\3\2\3\2\3\2\3\2\3\2\5\2\25\n\2\3\2\3\2\5\2\31")
         buf.write(u"\n\2\3\2\3\2\5\2\35\n\2\3\2\3\2\7\2!\n\2\f\2\16\2$\13")
-        buf.write(u"\2\3\3\3\3\3\4\3\4\3\4\2\3\2\5\2\4\6\2\4\3\2\5\7\3\2")
-        buf.write(u"\b\r,\2\24\3\2\2\2\4%\3\2\2\2\6\'\3\2\2\2\b\t\b\2\1\2")
-        buf.write(u"\t\13\5\4\3\2\n\f\7\17\2\2\13\n\3\2\2\2\13\f\3\2\2\2")
-        buf.write(u"\f\r\3\2\2\2\r\16\5\2\2\4\16\25\3\2\2\2\17\20\7\3\2\2")
-        buf.write(u"\20\21\5\2\2\2\21\22\7\4\2\2\22\25\3\2\2\2\23\25\7\16")
-        buf.write(u"\2\2\24\b\3\2\2\2\24\17\3\2\2\2\24\23\3\2\2\2\25\"\3")
-        buf.write(u"\2\2\2\26\30\f\3\2\2\27\31\7\17\2\2\30\27\3\2\2\2\30")
-        buf.write(u"\31\3\2\2\2\31\32\3\2\2\2\32\34\5\6\4\2\33\35\7\17\2")
+        buf.write(u"\2\3\3\3\3\3\4\3\4\3\4\2\3\2\5\2\4\6\2\4\3\2\5\b\3\2")
+        buf.write(u"\t\16,\2\24\3\2\2\2\4%\3\2\2\2\6\'\3\2\2\2\b\t\b\2\1")
+        buf.write(u"\2\t\13\5\4\3\2\n\f\7\20\2\2\13\n\3\2\2\2\13\f\3\2\2")
+        buf.write(u"\2\f\r\3\2\2\2\r\16\5\2\2\4\16\25\3\2\2\2\17\20\7\3\2")
+        buf.write(u"\2\20\21\5\2\2\2\21\22\7\4\2\2\22\25\3\2\2\2\23\25\7")
+        buf.write(u"\17\2\2\24\b\3\2\2\2\24\17\3\2\2\2\24\23\3\2\2\2\25\"")
+        buf.write(u"\3\2\2\2\26\30\f\3\2\2\27\31\7\20\2\2\30\27\3\2\2\2\30")
+        buf.write(u"\31\3\2\2\2\31\32\3\2\2\2\32\34\5\6\4\2\33\35\7\20\2")
         buf.write(u"\2\34\33\3\2\2\2\34\35\3\2\2\2\35\36\3\2\2\2\36\37\5")
         buf.write(u"\2\2\4\37!\3\2\2\2 \26\3\2\2\2!$\3\2\2\2\" \3\2\2\2\"")
         buf.write(u"#\3\2\2\2#\3\3\2\2\2$\"\3\2\2\2%&\t\2\2\2&\5\3\2\2\2")
@@ -41,12 +41,12 @@ class LtlParser ( Parser ):
     sharedContextCache = PredictionContextCache()
 
     literalNames = [ u"<INVALID>", u"'('", u"')'", u"'G'", u"'F'", u"'X'", 
-                     u"'U'", u"'W'", u"'^'", u"'v'", u"'<->'", u"'->'" ]
+                     u"'~'", u"'U'", u"'W'", u"'^'", u"'v'", u"'<->'", u"'->'" ]
 
     symbolicNames = [ u"<INVALID>", u"<INVALID>", u"<INVALID>", u"<INVALID>", 
                       u"<INVALID>", u"<INVALID>", u"<INVALID>", u"<INVALID>", 
                       u"<INVALID>", u"<INVALID>", u"<INVALID>", u"<INVALID>", 
-                      u"PROP", u"WS" ]
+                      u"<INVALID>", u"PROP", u"WS" ]
 
     RULE_exp = 0
     RULE_unop = 1
@@ -66,8 +66,9 @@ class LtlParser ( Parser ):
     T__8=9
     T__9=10
     T__10=11
-    PROP=12
-    WS=13
+    T__11=12
+    PROP=13
+    WS=14
 
     def __init__(self, input):
         super(LtlParser, self).__init__(input)
@@ -132,7 +133,7 @@ class LtlParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 18
             token = self._input.LA(1)
-            if token in [LtlParser.T__2, LtlParser.T__3, LtlParser.T__4]:
+            if token in [LtlParser.T__2, LtlParser.T__3, LtlParser.T__4, LtlParser.T__5]:
                 self.state = 7
                 self.unop()
                 self.state = 9
@@ -235,7 +236,7 @@ class LtlParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 35
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LtlParser.T__2) | (1 << LtlParser.T__3) | (1 << LtlParser.T__4))) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LtlParser.T__2) | (1 << LtlParser.T__3) | (1 << LtlParser.T__4) | (1 << LtlParser.T__5))) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self.consume()
@@ -277,7 +278,7 @@ class LtlParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 37
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LtlParser.T__5) | (1 << LtlParser.T__6) | (1 << LtlParser.T__7) | (1 << LtlParser.T__8) | (1 << LtlParser.T__9) | (1 << LtlParser.T__10))) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LtlParser.T__6) | (1 << LtlParser.T__7) | (1 << LtlParser.T__8) | (1 << LtlParser.T__9) | (1 << LtlParser.T__10) | (1 << LtlParser.T__11))) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self.consume()

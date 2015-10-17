@@ -48,6 +48,10 @@ select option {
   padding: 5px;
 }
 
+textarea#ltl-input {
+  font-size: 36px;
+}
+
 textarea {
   padding: 5px;
   width: 90%;

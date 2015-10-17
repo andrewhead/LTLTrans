@@ -13,14 +13,28 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 class GetEnglishFromLtlTest(unittest.TestCase):
 
-    def test_get_english_for_single_ltl_statement(self):
+    def test_get_english_for_proposition(self):
+        client = Client()
+        resp = client.get('/ltl_to_english', {
+            'ltl': 'P',
+            'propositions': json.dumps([
+                {'subject': "the robot", 'verb': "moves", 'object': ""},
+            ]),
+        })
+        data = json.loads(resp.content)
+        self.assertIn("Currently, the robot moves", data['sentence'])
+
+    def test_get_english_for_binary_op(self):
         client = Client()
         resp = client.get('/ltl_to_english', {
             'ltl': 'P -> Q',
-            'propositions': [
+            'propositions': json.dumps([
                 {'subject': "the robot", 'verb': "moves", 'object': ""},
                 {'subject': "the light", 'verb': "summons", 'object': "the doctor"},
-            ]
+            ]),
         })
         data = json.loads(resp.content)
-        self.assertIn("If the robot moves, then the light summons the doctor", data['sentence'])
+        self.assertIn(
+            "Currently, if the robot moves then the light summons the doctor",
+            data['sentence']
+        )

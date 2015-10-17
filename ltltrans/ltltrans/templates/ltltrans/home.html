@@ -1,34 +1,34 @@
 {% load staticfiles %}
 <html>
     <head>
-    <meta charset="utf-8" />
+        <meta charset="utf-8" />
         <title>LTL Trans</title>
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script src="{% static "ltltrans/js/ltltrans.js" %}"></script>
     </head>
     <link rel='stylesheet' href="{% static "ltltrans/style/main.css" %}"/>
     <body>
         <div class='central-div'>
             <h1 class='main-title'>LTL Trans</h1>
             <h2 class='slogan'>A study aide so you can understand what your LTL means in plain English.</h2>
-            <form>
+            <form>{% csrf_token %}
                 <div class='form'>
                     <div class='cols'>
                         <div class='label-cont'>
                             <p class='label'>Subject</p>
                         </div>
                         <div>
-                            <select>
-                                {% for o in options %}
-                                <option>{{ o }}</option>
+                            <select id='prop-select'>
+                                {% for pg in propositions %}
+                                <option value="{{ forloop.counter0 }}" 
+                                    data-example-formula="{{ pg.example.formula }}" 
+                                    data-example-sentence="{{ pg.example.sentence }}">
+                                    {% for p in pg.propositions %}
+                                    {{ p.letter }} = '{{ p.sentence }}'{% if not forloop.last %},{% endif %}
+                                    {% endfor %}
+                                </option>
                                 {% endfor %}
                             </select>
-                        </div>
-                    </div>
-                    <div class='cols'>
-                        <div class='label-cont'>
-                            <p class='label'>English</p>
-                        </div>
-                        <div>
-                            <textarea placeholder='{{ text }}'></textarea>
                         </div>
                     </div>
                     <div class='cols'>
@@ -36,7 +36,15 @@
                             <p class='label'>LTL</p>
                         </div>
                         <div>
-                            <textarea placeholder='{{ ltl }}'></textarea>
+                            <textarea id='ltl-input' rows=1 placeholder='{{ ltl }}'></textarea>
+                        </div>
+                    </div>
+                    <div class='cols'>
+                        <div class='label-cont'>
+                            <p class='label'>English</p>
+                        </div>
+                        <div>
+                            <textarea id='text-input' placeholder='{{ text }}'></textarea>
                         </div>
                     </div>
                 </div>

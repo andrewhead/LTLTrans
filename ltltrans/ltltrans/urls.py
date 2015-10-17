@@ -19,8 +19,9 @@ from django.contrib import admin
 from ltltrans import views
 
 urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^/', views.home, name='home'),
     url(r'^home/', views.home, name='home'),
+    url(r'^admin/', include(admin.site.urls)),
     url(r'^english_to_ltl$', views.english_to_ltl, name='english_to_ltl'),
     url(r'^ltl_to_english$', views.ltl_to_english, name='ltl_to_english'),
     url(r'^hello_world$', views.hello_world, name='hello_world'),

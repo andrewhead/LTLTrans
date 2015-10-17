@@ -7,7 +7,7 @@ exp : '(' exp ')'           |
       unop WS? exp          |
       exp WS? binop WS? exp ;
 
-unop : 'G' | 'F' | 'X' ;
+unop : 'G' | 'F' | 'X' | '~' ;
 binop : 'U' | 'W' | '^' | 'v' | '<->' | '->' ;
 
 PROP  : [A-Za-z^GFXUW] ;

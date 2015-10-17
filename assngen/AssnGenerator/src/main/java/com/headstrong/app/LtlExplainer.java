@@ -46,7 +46,7 @@ public class LtlExplainer {
 
     public NodeType getNodeType(Object o) {
         NodeType nt = null;
-        if (o instanceof String) {
+        if (o instanceof String || o instanceof Integer) {
             nt = NodeType.PROPVAR;
         } else {
             Map m = (Map) o;
@@ -100,7 +100,12 @@ public class LtlExplainer {
     }
 
     private NLGElement visitProposition(Object n) {
-        int index = Integer.parseInt((String)n) - 1;
+        int index = -1;
+        if (n instanceof String) {
+            index = Integer.parseInt((String)n) - 1;
+        } else if (n instanceof Integer) {
+            index = ((Integer)n).intValue() - 1;
+        }
         Map prop = (Map) this.propositions.get(index);
         SPhraseSpec clause = this.nlgFactory.createClause();
         NPPhraseSpec subjPhrase = this.nlgFactory.createNounPhrase(prop.get("subject"));
