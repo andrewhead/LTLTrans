@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-from django.http import HttpResponse
-from ltltrans.converter import Converter
-import StringIO
 import logging
+import StringIO
 import json
 import ast
+
+from django.http import HttpResponse
+from django.shortcuts import render
+
+from ltltrans.converter import Converter
 
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -15,6 +18,10 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 def hello_world(request):
     return HttpResponse("Hello World!")
+
+
+def home(request):
+    return render(request, 'ltltrans/home.html')
 
 
 def english_to_ltl(request):

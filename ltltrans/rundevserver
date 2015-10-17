@@ -1,0 +1,14 @@
+#! /bin/bash
+
+DEPS=`ls deps/*.jar | tr '\n' ':'`
+# CLASSPATH=$CLASSPATH:$DEPS
+DJANGO_PORT=${1:-8004}
+
+# Start the servers
+## Run Java Explanation server
+# java -cp $CLASSPATH:$DEPS CssExplainerEntryPoint &
+## Start the Python server
+DJANGO_SETTINGS_MODULE=ltltrans.settings.dev python manage.py runserver $DJANGO_PORT
+
+# Shutdown all servers when on interrupt
+trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT

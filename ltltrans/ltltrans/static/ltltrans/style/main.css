@@ -1,0 +1,79 @@
+.main-title {
+  font-family: Helvetica, sans-serif;
+  font-size: 64px;
+  margin: 20px auto;
+}
+
+.slogan {
+  font-style: italic;
+}
+
+.central-div {
+  margin: 0px auto;
+  margin-top: 80px;
+  width: 60%;
+  max-width: 800px;
+}
+
+h2, h3, h4, h5, h6 {
+  margin-top: 20px;
+}
+
+h2 {
+  font-size: 20px;
+}
+
+p, h2, h3, h4, h5, h6, li, label, select, textarea {
+  font-family: Helvetica, sans-serif;
+  line-height: 1.3em;
+}
+
+p, li, select, textarea {
+  font-size: 16px;
+}
+
+p.label {
+  margin: 0;
+  font-size: 20px;
+  text-align: right;
+  padding-right: 20px;
+  line-height: 1em;
+}
+
+select {
+  width: 90%;
+}
+
+select option {
+  padding: 5px;
+}
+
+textarea {
+  padding: 5px;
+  width: 90%;
+}
+
+div.form {
+  display: table;
+  width: 100%;
+}
+
+div.cols {
+  display: table-row;
+}
+
+div.cols div:nth-child(1) {
+  display: table-cell;
+  width: 15%;
+}
+
+div.label-cont {
+  vertical-align: middle;
+}
+
+div.cols div:nth-child(2) {
+  display: table-cell;
+  padding: 3px 0;
+  vertical-align: middle;
+  width: 85%;
+}
