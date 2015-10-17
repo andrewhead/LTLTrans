@@ -21,7 +21,14 @@ def hello_world(request):
 
 
 def home(request):
-    return render(request, 'ltltrans/home.html')
+    return render(request, 'ltltrans/home.html', {
+        'options': [
+            'p = The robot moves, q = The light blinks',
+            'p = The light turns on',
+        ],
+        'text': 'If the robot will eventually move, then the light always blinks.',
+        'ltl': 'Fp -> Gq',
+    })
 
 
 def english_to_ltl(request):

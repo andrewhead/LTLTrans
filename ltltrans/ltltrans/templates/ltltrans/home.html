@@ -17,8 +17,9 @@
                         </div>
                         <div>
                             <select>
-                                <option>The robot moves</option>
-                                <option>The light turns on</option>
+                                {% for o in options %}
+                                <option>{{ o }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -27,7 +28,7 @@
                             <p class='label'>English</p>
                         </div>
                         <div>
-                            <textarea></textarea>
+                            <textarea placeholder='{{ text }}'></textarea>
                         </div>
                     </div>
                     <div class='cols'>
@@ -35,7 +36,7 @@
                             <p class='label'>LTL</p>
                         </div>
                         <div>
-                            <textarea></textarea>
+                            <textarea placeholder='{{ ltl }}'></textarea>
                         </div>
                     </div>
                 </div>
