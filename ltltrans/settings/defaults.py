@@ -106,3 +106,4 @@ PY4J_PORT = 25334
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = []
