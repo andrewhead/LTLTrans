@@ -1,0 +1,19 @@
+domain: ltltrans.info
+localport: 8003
+appname: ltltrans
+repo: https://github.com/andrewhead/LTLTrans.git
+djdir: "{{ src }}"
+publicbucket: ltltrans-public
+publicdir: ltltrans-server-deps
+privatebucket: ltltrans
+djkey: ltltrans.key
+logfile: /var/log/ltltrans.log
+staticfiles: yes
+external_deps:
+- englishPCFG.ser.gz
+- stanford-parser.jar
+- LtlExplainer-1.0.jar
+processes:
+- ltl-explainer
+systempkgs:
+- default-jre
