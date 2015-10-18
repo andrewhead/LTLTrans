@@ -1,6 +1,0 @@
-!!python/unicode 'unop':
-  !!python/unicode 'arg':
-    !!python/unicode 'unop':
-      !!python/unicode 'arg': 1
-      !!python/unicode 'type': !!python/unicode 'future'
-  !!python/unicode 'type': !!python/unicode 'not'

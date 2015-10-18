@@ -1,5 +1,0 @@
-G(F(timer=1)) -> (G(fl=1 -> (fl=1 U timer=1)) *
-                  G(hl=1 -> (hl=1 U timer=1)) *
-                  G(car=1 -> F(fl=1)) *
-                  G(F(hl=1)) *
-                  G(!(hl=1 * fl=1)));
