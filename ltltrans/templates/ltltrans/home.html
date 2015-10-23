@@ -3,7 +3,8 @@
     <head>
         <meta charset="utf-8" />
         <title>LTL Trans</title>
-        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script src="{% static "ltltrans/js/jquery.min.js" %}"></script>
+        <script src="{% static "ltltrans/js/js.cookie.js" %}"></script>
         <script src="{% static "ltltrans/js/ltltrans.js" %}"></script>
     </head>
     <link rel='stylesheet' href="{% static "ltltrans/style/main.css" %}"/>
@@ -29,6 +30,23 @@
                                 </option>
                                 {% endfor %}
                             </select>
+                            <button id='add_subj_button'>+</button>
+                        </div>
+                    </div>
+                    <div id='add_subj_cont' class='cols'>
+                        <div></div>
+                        <div id='add_subj_cell'>
+                            <p class='body'><b>Subject:</b> <span id='prop_list' class='uninitialized'>(add propositions)</span></p>
+                            <div id='prop_spec_cont'>
+                                <label><b>Proposition:</b></label>
+                                <input type='text' id='symbol_input' placeholder='r' />
+                                <input type='text' id='subject_input' placeholder='the robot' />
+                                <input type='text' id='verb_input' placeholder='flash' />
+                                <input type='text' id='object_input' placeholder='the LED' />
+                                <button id='add_prop_button'>Add</input>
+                            </div>
+                            <button id='save_subj_button'>Save Subject</button>
+                            <button id='cancel_subj_button'>Cancel</button>
                         </div>
                     </div>
                     <div class='cols'>

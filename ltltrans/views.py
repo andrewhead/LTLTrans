@@ -6,6 +6,8 @@ import logging
 import StringIO
 import json
 import ast
+from time import strftime
+import time
 from py4j.java_gateway import JavaGateway, GatewayParameters
 
 from django.http import HttpResponse
@@ -17,6 +19,9 @@ from ltltrans.ltlparser.ltl_parser import LtlDictBuilder
 
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
+request_logger = logging.getLogger('request')
+
+
 PROPOSITION_GROUPS = [
     {
         'propositions': [
@@ -95,16 +100,24 @@ def hello_world(request):
 
 
 def home(request):
+    start_timestamp = strftime("%Y-%m-%d %H:%M:%S")
     context = {
         'propositions': PROPOSITION_GROUPS,
         'text': 'If the robot will eventually move, then the light always blinks.',
         'ltl': 'Fp -> Gq',
     }
+    request_logger.info(
+        "Visited 'home'. IP: %s,,, Start Time: %s,,, ",
+        request.META['REMOTE_ADDR'],
+        start_timestamp,
+        )
     return render(request, 'ltltrans/home.html', context)
 
 
 def english_to_ltl(request):
 
+    start_timestamp = strftime("%Y-%m-%d %H:%M:%S")
+    start_time = time.time()
     sentence = request.GET.get("sentence")
     variables = ast.literal_eval(request.GET.get("variables"))
 
@@ -123,6 +136,17 @@ def english_to_ltl(request):
         ltl_string = buff.getvalue()
         buff.close()
 
+    request_logger.info(
+        "Visited 'english_to_ltl'. IP: %s,,, Start Time: %s,,, Execution Time: %f,,, " +
+        "Sentence: %s,,, Variables: %s,,, Result: %s,,,",
+        request.META['REMOTE_ADDR'],
+        start_timestamp,
+        time.time() - start_time,
+        sentence,
+        json.dumps(variables),
+        ltl_string,
+        )
+
     return HttpResponse(json.dumps({
         'ltl': ltl_string,
     }))
@@ -130,8 +154,18 @@ def english_to_ltl(request):
 
 def ltl_to_english(request):
 
+    start_timestamp = strftime("%Y-%m-%d %H:%M:%S")
+    start_time = time.time()
     ltl = request.POST.get('formula')
-    prop_index = int(request.POST.get('proposition'))
+    prop = request.POST.get('proposition')
+    custom_subjects = json.loads(request.POST.get('subjects'))
+
+    if prop.startswith('s'):
+        prop_index = int(prop.replace('s', ''))
+        props = custom_subjects[prop_index]
+    else:
+        prop_index = int(prop)
+        props = PROPOSITION_GROUPS[prop_index]['propositions']
 
     dict_builder = LtlDictBuilder()
     res = dict_builder.to_dict(ltl)
@@ -139,13 +173,23 @@ def ltl_to_english(request):
     propnames_parsed = res['propositions']
 
     propnames_ordered = [t[1] for t in sorted(propnames_parsed.items(), key=lambda t: t[0])]
-    props = PROPOSITION_GROUPS[prop_index]['propositions']
     props_ordered = []
     for pn in propnames_ordered:
         props_ordered.append(filter(lambda p: p['letter'] == pn, props)[0])
 
     explainer = gateway.entry_point.getExplainer(props_ordered)
     explanation = explainer.render(formula_dict)
+
+    request_logger.info(
+        "Visited 'ltl_to_english'. IP: %s,,, Start Time: %s,,, Execution Time: %f,,, " +
+        "Formula: %s,,, Propositions: %s,,, Result: %s,,,",
+        request.META['REMOTE_ADDR'],
+        start_timestamp,
+        time.time() - start_time,
+        ltl,
+        json.dumps(props),
+        explanation,
+        )
 
     return HttpResponse(json.dumps({
         'sentence': explanation,

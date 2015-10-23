@@ -15,6 +15,20 @@
   max-width: 800px;
 }
 
+#add_subj_cont {
+  display: none;
+  margin-bottom: 20px;
+}
+
+#add_subj_cell {
+  border: 1px dashed grey;
+  padding: 10px 15px;
+}
+
+#add_subj_cont.show {
+  display: table-row;
+}
+
 h2, h3, h4, h5, h6 {
   margin-top: 20px;
 }
@@ -28,7 +42,7 @@ p, h2, h3, h4, h5, h6, li, label, select, textarea {
   line-height: 1.3em;
 }
 
-p, li, select, textarea {
+p, li, select, textarea, button {
   font-size: 16px;
 }
 
@@ -58,6 +72,11 @@ p#key code {
   font-family: "Lucida Console";
 }
 
+p.body {
+  margin-top: .5ex;
+  margin-bottom: .5ex;
+}
+
 select {
   width: 90%;
 }
@@ -66,13 +85,49 @@ select option {
   padding: 5px;
 }
 
+#add_subj_button {
+  width: 9%;
+}
+
+#prop_list.uninitialized {
+  color: grey;
+}
+
+input[type='text'] {
+  font-size: 16px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+input[type='text']:first-of-type {
+  margin-left: 5px;
+}
+
+#symbol_input {
+  width: 1em;
+}
+
+#subject_input, #verb_input, #object_input {
+  width: 8em;
+}
+
+#save_subj_button {
+  width: 80%;
+  margin-bottom: 5px;
+}
+
+#cancel_subj_button {
+  width: 16%;
+  margin-bottom: 5px;
+}
+
 textarea#ltl-input {
   font-size: 36px;
 }
 
 textarea {
   padding: 5px;
-  width: 90%;
+  width: 100%;
 }
 
 div.form {

@@ -41,7 +41,7 @@ LOGGING = {
             'propagate': True,
             'level': 'DEBUG',
         },
-        'tutorons': {
+        'request': {
             'handlers': ['file'],
             'level': 'DEBUG',
         },

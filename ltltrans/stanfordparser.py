@@ -8,7 +8,7 @@ import subprocess
 import os.path
 import re
 from tempfile import NamedTemporaryFile
-from django.conf import settings
+# from django.conf import settings
 
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -36,13 +36,13 @@ def parse_sentence(text):
     try:
         output = subprocess.check_output(
             "java " +
-            "-cp " + os.path.join(settings.DEPS_DIR, "stanford-parser.jar") + " " +
+            "-cp " + os.path.join(os.pardir, 'deps', "stanford-parser.jar") + " " +
             "-mx200m " +
             "edu.stanford.nlp.parser.lexparser.LexicalizedParser " +
             "-retainTmpSubCategories " +
             "-outputFormat \"typedDependencies\" " +
             "-outputFormatOptions \"basicDependencies\" " +
-            os.path.join(settings.DEPS_DIR, "englishPCFG.ser.gz") + " " +
+            os.path.join(os.pardir, 'deps', "englishPCFG.ser.gz") + " " +
             os.path.abspath(tempFile.name),
             shell=True,
             stderr=subprocess.STDOUT)
