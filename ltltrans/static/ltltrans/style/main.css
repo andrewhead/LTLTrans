@@ -40,6 +40,24 @@ p.label {
   line-height: 1em;
 }
 
+p#key {
+  margin: 0;
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+span.operator {
+  display: inline-block;
+}
+
+span.operator:first-letter {
+  font-size: 15px;
+}
+
+p#key code {
+  font-family: "Lucida Console";
+}
+
 select {
   width: 90%;
 }
