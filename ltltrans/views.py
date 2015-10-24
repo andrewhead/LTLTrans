@@ -191,7 +191,8 @@ def report_error(request):
     props = get_propositions(prop, PROPOSITION_GROUPS, custom_subjects)
     ErrorReport.objects.create(
         sentence=request.POST.get('sentence'),
-        ltl=request.POST.get('ltl'),
+        ltl=request.POST.get('formula'),
         propositions=json.dumps(props),
         ipAddr=get_ip(request),
     )
+    return HttpResponse()

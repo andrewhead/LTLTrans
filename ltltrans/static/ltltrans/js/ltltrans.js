@@ -177,6 +177,24 @@ function init() {
         dismiss_add_subj_cont(e);
     });
 
+    // Report errors
+    $('#report_button').on('click', function(e) {
+        $.post(
+            '/report_error',
+            {
+                'formula': $('#ltl-input').val(),
+                'sentence': $('#text-input').val(),
+                'proposition': $('#prop-select').val(),
+                'subjects': JSON.stringify(customSubjects),
+            },
+            function() {
+                $('#thanks-text').show();
+                $('#thanks-text').delay(2000).fadeOut(2000);
+            }
+        );
+        e.preventDefault();
+    });
+
     // Load existing custom subjects from cookies
     customSubjects = Cookies.getJSON('subjects') || [];
     var i;

@@ -139,6 +139,28 @@ p.update_text {
   display: none;
 }
 
+#report_button {
+  margin-top: 20px;
+  color: #444444;
+  width: 100%;
+}
+
+#thanks-text {
+  background-color: #eeeeff;
+  border: 1px dashed grey;
+  text-align: center;
+  display: none;
+}
+
+#contact-text {
+  margin-top: 5px;
+  text-align: center;
+}
+
+#contact-text a {
+  color: #7777ff;
+}
+
 div.form {
   display: table;
   width: 100%;
@@ -160,7 +182,7 @@ div.label-cont {
 div.cols div:nth-child(2) {
   display: table-cell;
   position: relative;
-  padding: 3px 0;
+  padding: 10px 0;
   vertical-align: middle;
   width: 85%;
 }
