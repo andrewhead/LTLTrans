@@ -80,7 +80,7 @@ class Statement(object):
     def print_statement(self, outf = sys.stdout, spaced = False):
         #print self.variable, self.operator,
         if self.is_negative:
-            outf.write("!")
+            outf.write("~")
             if spaced:
                 outf.write(" ")
         if self.variable:
