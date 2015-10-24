@@ -9,6 +9,7 @@
   - python-dev
   - supervisor
   - memcached
+  - sqlite3
   sudo: true
   tags: serverpkgs
 
@@ -91,7 +92,9 @@
   with_items: subdomains
   when: subdomains is defined
   sudo: true
-  tags: subdomains, nginx
+  tags:
+  - subdomains
+  - nginx
 
 - name: Remove default nginx user
   lineinfile: dest=/etc/nginx/nginx.conf line="user www-data;" state=absent
@@ -201,18 +204,26 @@
   - present
   - stopped
   sudo: true
-  tags: updatecode, processes
+  tags:
+  - updatecode
+  - processes
 
 - name: Cleanup after last application run
   file: dest=/tmp/{{ appname }}.pid state=absent
   sudo: true
-  tags: updatecode, processes
+  tags:
+  - updatecode
+  - processes
 
 - name: Start application
   supervisorctl: name={{ appname }} state=started
   sudo: true
-  tags: updatecode, processes
+  tags: 
+  - updatecode
+  - processes
 
 - name: Restart nginx
   service: name=nginx state=restarted
-  tags: subdomains, nginx
+  tags: 
+  - subdomains
+  - nginx

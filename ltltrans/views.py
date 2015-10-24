@@ -11,7 +11,7 @@ from StringIO import StringIO
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.conf import settings
-from ipware.ip import get_ip
+from ipware.ip import get_real_ip
 
 from ltltrans.englishparser.translator import translate
 from ltltrans.ltlparser.ltl_parser import LtlDictBuilder
@@ -105,7 +105,7 @@ def home(request):
         'ltl': 'Fp -> Gq',
     }
     LoadPageEvent.objects.create(
-        ipAddr=get_ip(request),
+        ipAddr=get_real_ip(request),
     )
     return render(request, 'ltltrans/home.html', context)
 
@@ -141,7 +141,7 @@ def english_to_ltl(request):
         sentence=sentence,
         ltl=ltl,
         propositions=json.dumps(props),
-        ipAddr=get_ip(request),
+        ipAddr=get_real_ip(request),
         execTime=time.time() - start_time,
     )
 
@@ -175,7 +175,7 @@ def ltl_to_english(request):
         sentence=explanation,
         ltl=ltl,
         propositions=json.dumps(props),
-        ipAddr=get_ip(request),
+        ipAddr=get_real_ip(request),
         execTime=time.time() - start_time,
     )
 
@@ -192,6 +192,6 @@ def report_error(request):
         sentence=request.POST.get('sentence'),
         ltl=request.POST.get('formula'),
         propositions=json.dumps(props),
-        ipAddr=get_ip(request),
+        ipAddr=get_real_ip(request),
     )
     return HttpResponse()
