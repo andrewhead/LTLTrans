@@ -27,28 +27,27 @@ PROPOSITION_GROUPS = [
         'propositions': [
             {
                 'subject': 'the robot',
-                'verb': 'moves',
+                'verb': 'move',
                 'letter': 'r',
                 'sentence': "the robot moves"
             },
             {
                 'subject': 'the light',
-                'verb': 'turn',
-                'object': 'on',
+                'verb': 'flashe',
                 'letter': 'l',
-                'sentence': "the light turns on"
+                'sentence': "the light flashes"
             },
         ],
         'example': {
             'formula': 'G(r -> Fl)',
-            'sentence': "If the robot moves then eventually the light will turn on.",
+            'sentence': "If the robot moves then eventually the light will flash.",
         }
     },
     {
         'propositions': [
             {
                 'subject': 'the brake',
-                'verb': 'engages',
+                'verb': 'engage',
                 'letter': 'b',
                 'sentence': "the brake engages",
             }
@@ -61,28 +60,28 @@ PROPOSITION_GROUPS = [
     {
         'propositions': [
             {
-                'subject': 'thread 1',
-                'verb': 'finishes',
-                'letter': 't',
-                'sentence': "thread 1 finishes",
+                'subject': 'the light',
+                'verb': 'dim',
+                'letter': 'l',
+                'sentence': "the light dims",
             },
             {
-                'subject': 'thread 2',
-                'verb': 'finishes',
-                'letter': 'u',
-                'sentence': "thread 2 finishes",
+                'subject': 'the sensor',
+                'verb': 'trigger',
+                'letter': 's',
+                'sentence': "the sensor triggers",
             },
             {
-                'subject': 'the process',
-                'verb': 'exit',
-                'letter': 'p',
-                'sentence': "the process exists",
+                'subject': 'the alarm',
+                'verb': 'sound',
+                'letter': 'a',
+                'sentence': "the alarm sounds",
             },
         ],
         'example': {
-            'formula': 'G((t ^ u) -> Xp)',
-            'sentence': "If thread 1 finishes and thread 2 finishes then the process exits" +
-                        "in the next step.",
+            'formula': 'G((l ^ s) -> Xa)',
+            'sentence': "If the light dims and the sensor triggers then the alarm sounds " +
+                        "in the next step."
         }
     },
 ]

@@ -19,7 +19,7 @@
                             <p class='label'>Subject</p>
                         </div>
                         <div>
-                            <select id='prop-select'>
+                            <select id='prop-select' value=0>
                                 {% for pg in propositions %}
                                 <option value="{{ forloop.counter0 }}" 
                                     data-example-formula="{{ pg.example.formula }}" 
@@ -56,6 +56,8 @@
                         <div>
                             <textarea id='ltl-input' rows=1 placeholder='{{ ltl }}'></textarea>
                             <p id='ltl-update-text' class='update_text'>Updating...</p>
+                            <p id='ltl-error-text' class='error_text'>Bad LTL</p>
+                            <img id='ltl-success-img' class='success_img' src="{% static "ltltrans/img/check.png" %}"/>
                             <p id='key'>
                                 <b>Key:</b>
                                 (<code>-&gt;</code>: <span class='operator'>IMPLIES</span>)
@@ -72,6 +74,8 @@
                         <div>
                             <textarea id='text-input' placeholder='{{ text }}'></textarea>
                             <p id='text-update-text' class='update_text'>Updating...</p>
+                            <p id='text-error-text' class='error_text'>English could not be parsed.</p>
+                            <img id='text-success-img' class='success_img' src="{% static "ltltrans/img/check.png" %}"/>
                         </div>
                     </div>
                     <div class='cols'>

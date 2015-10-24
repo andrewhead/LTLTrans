@@ -130,13 +130,28 @@ textarea {
   width: 100%;
 }
 
-p.update_text {
+p.error_text, p.update_text {
   position: absolute;
   top: 0px;
   right: 5px;
-  color: grey;
   font-size: 20px;
   display: none;
+}
+
+p.update_text {
+  color: grey;
+}
+
+p.error_text {
+  color: #ff5555;
+}
+
+.success_img {
+  position: absolute;
+  top: 20px;
+  right: 5px;
+  display: none;
+  width: 20px;
 }
 
 #report_button {

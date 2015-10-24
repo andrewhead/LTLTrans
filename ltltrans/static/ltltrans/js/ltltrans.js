@@ -44,8 +44,14 @@ function init() {
 
     // Listen for changes in one of the text areas to update the other
     // However, first wait until the user has finished forming input
-    $('#ltl-input').on('input', function() {
+    function hide_update_text() {
         $('.update_text').hide();
+        $('.success_img').hide();
+        $('.error_text').hide();
+    }
+
+    $('#ltl-input').on('input', function() {
+        hide_update_text();
         $('#text-update-text').show();
         window.clearTimeout(updateTimeoutId);
         updateTimeoutId = window.setTimeout(function() {
@@ -57,15 +63,19 @@ function init() {
                     'subjects': JSON.stringify(customSubjects),
                 },
                 function(data) {
+                    hide_update_text();
                     $('#text-input').val(data.sentence);
-                    $('.update_text').hide();
+                    $('#text-success-img').show().delay(2000).fadeOut(2000);
                 }
-            );
+            ).error(function() {
+                hide_update_text();
+                $('#ltl-error-text').show().delay(2000).fadeOut(2000);
+            });
         }, UPDATE_WAIT);
     });
 
     $('#text-input').on('input', function() {
-        $('.update_text').hide();
+        hide_update_text();
         $('#ltl-update-text').show();
         window.clearTimeout(updateTimeoutId);
         updateTimeoutId = window.setTimeout(function() {
@@ -77,10 +87,14 @@ function init() {
                     'subjects': JSON.stringify(customSubjects),
                 },
                 function(data) {
+                    hide_update_text();
                     $('#ltl-input').val(data.ltl);
-                    $('.update_text').hide();
+                    $('#ltl-success-img').show().delay(2000).fadeOut(2000);
                 }
-            );
+            ).error(function() {
+                hide_update_text();
+                $('#text-error-text').show().delay(3000).fadeOut(2000);
+            });
         }, UPDATE_WAIT);
     });
 
@@ -161,12 +175,14 @@ function init() {
         var opt = $('<option></option>')
             .text(propListToString(propositions))
             .val(value);
-        $('select').append(opt).val(value);
+        $('select').append(opt);
+        return value;
     }
 
     $('#save_subj_button').on('click', function(e) {
         if (propositions.length > 0) {
-            add_subject_to_select(propositions, customSubjects.length);
+            var optValue = add_subject_to_select(propositions, customSubjects.length);
+            $('select').val(optValue);
             customSubjects.push(propositions);
             Cookies.set('subjects', customSubjects);
         }

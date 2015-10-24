@@ -12,7 +12,7 @@ def translate(sentence, propositions):
     for p in propositions:
         args = [Var(p['letter']), p['verb']]
         kwargs = {'noun': p['subject']}
-        if p['object'] != '':
+        if 'object' in p and p['object'] != '':
             kwargs.update(**{
                 'pobj': p['object'],
                 'dobj': p['object'],
