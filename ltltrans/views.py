@@ -4,7 +4,6 @@
 from __future__ import unicode_literals
 import logging
 import json
-from time import strftime
 import time
 from py4j.java_gateway import JavaGateway, GatewayParameters
 from StringIO import StringIO
@@ -12,9 +11,11 @@ from StringIO import StringIO
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.conf import settings
+from ipware.ip import get_ip
 
 from ltltrans.englishparser.translator import translate
 from ltltrans.ltlparser.ltl_parser import LtlDictBuilder
+from ltltrans.models import ErrorReport, LoadPageEvent, GetLtlEvent, GetEnglishEvent
 
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -99,17 +100,14 @@ def hello_world(request):
 
 
 def home(request):
-    start_timestamp = strftime("%Y-%m-%d %H:%M:%S")
     context = {
         'propositions': PROPOSITION_GROUPS,
         'text': 'If the robot will eventually move, then the light always blinks.',
         'ltl': 'Fp -> Gq',
     }
-    request_logger.info(
-        "Visited 'home'. IP: %s,,, Start Time: %s,,, ",
-        request.META['REMOTE_ADDR'],
-        start_timestamp,
-        )
+    LoadPageEvent.objects.create(
+        ipAddr=get_ip(request),
+    )
     return render(request, 'ltltrans/home.html', context)
 
 
@@ -119,13 +117,12 @@ def get_propositions(propname, defaults, custom):
         props = custom[prop_index]
     else:
         prop_index = int(propname)
-        props = defaults[propname]['propositions']
+        props = defaults[prop_index]['propositions']
     return props
 
 
 def english_to_ltl(request):
 
-    start_timestamp = strftime("%Y-%m-%d %H:%M:%S")
     start_time = time.time()
     sentence = request.POST.get("sentence")
     prop = request.POST.get('proposition')
@@ -141,25 +138,21 @@ def english_to_ltl(request):
         ltl = "LTL description could not be translated. " +\
             "Perhaps it is too complex of a statement."
 
-    request_logger.info(
-        "Visited 'english_to_ltl'. IP: %s,,, Start Time: %s,,, Execution Time: %f,,, " +
-        "Sentence: %s,,, Variables: %s,,, Result: %s,,,",
-        request.META['REMOTE_ADDR'],
-        start_timestamp,
-        time.time() - start_time,
-        sentence,
-        json.dumps(props),
-        ltl,
-        )
+    GetLtlEvent.objects.create(
+        sentence=sentence,
+        ltl=ltl,
+        propositions=json.dumps(props),
+        ipAddr=get_ip(request),
+        execTime=time.time() - start_time,
+    )
 
     return HttpResponse(json.dumps({
         'ltl': ltl,
-    }))
+    }), content_type="application/json")
 
 
 def ltl_to_english(request):
 
-    start_timestamp = strftime("%Y-%m-%d %H:%M:%S")
     start_time = time.time()
     ltl = request.POST.get('formula')
     prop = request.POST.get('proposition')
@@ -179,17 +172,26 @@ def ltl_to_english(request):
     explainer = gateway.entry_point.getExplainer(props_ordered)
     explanation = explainer.render(formula_dict)
 
-    request_logger.info(
-        "Visited 'ltl_to_english'. IP: %s,,, Start Time: %s,,, Execution Time: %f,,, " +
-        "Formula: %s,,, Propositions: %s,,, Result: %s,,,",
-        request.META['REMOTE_ADDR'],
-        start_timestamp,
-        time.time() - start_time,
-        ltl,
-        json.dumps(props),
-        explanation,
-        )
+    GetEnglishEvent.objects.create(
+        sentence=explanation,
+        ltl=ltl,
+        propositions=json.dumps(props),
+        ipAddr=get_ip(request),
+        execTime=time.time() - start_time,
+    )
 
     return HttpResponse(json.dumps({
         'sentence': explanation,
     }), content_type="application/json")
+
+
+def report_error(request):
+    prop = request.POST.get('proposition')
+    custom_subjects = json.loads(request.POST.get('subjects'))
+    props = get_propositions(prop, PROPOSITION_GROUPS, custom_subjects)
+    ErrorReport.objects.create(
+        sentence=request.POST.get('sentence'),
+        ltl=request.POST.get('ltl'),
+        propositions=json.dumps(props),
+        ipAddr=get_ip(request),
+    )

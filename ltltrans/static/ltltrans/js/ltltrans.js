@@ -1,4 +1,4 @@
-/*global $, document, Cookies*/
+/*global $, document, Cookies, window*/
 
 /* 
  * The following code enables AJAX requests with CSRF protection
@@ -39,20 +39,49 @@ function init() {
 
     var customSubjects = [];
     var propositions = [];
+    var updateTimeoutId = -1;
+    var UPDATE_WAIT = 2000;  // ms
 
     // Listen for changes in one of the text areas to update the other
+    // However, first wait until the user has finished forming input
     $('#ltl-input').on('input', function() {
-        $.post(
-            '/ltl_to_english',
-            {
-                'formula': $(this).val(),
-                'proposition': $('#prop-select').val(),
-                'subjects': JSON.stringify(customSubjects),
-            },
-            function(data) {
-                $('#text-input').val(data.sentence);
-            }
-        );
+        $('.update_text').hide();
+        $('#text-update-text').show();
+        window.clearTimeout(updateTimeoutId);
+        updateTimeoutId = window.setTimeout(function() {
+            $.post(
+                '/ltl_to_english',
+                {
+                    'formula': $('#ltl-input').val(),
+                    'proposition': $('#prop-select').val(),
+                    'subjects': JSON.stringify(customSubjects),
+                },
+                function(data) {
+                    $('#text-input').val(data.sentence);
+                    $('.update_text').hide();
+                }
+            );
+        }, UPDATE_WAIT);
+    });
+
+    $('#text-input').on('input', function() {
+        $('.update_text').hide();
+        $('#ltl-update-text').show();
+        window.clearTimeout(updateTimeoutId);
+        updateTimeoutId = window.setTimeout(function() {
+            $.post(
+                '/english_to_ltl',
+                {
+                    'sentence': $('#text-input').val(),
+                    'proposition': $('#prop-select').val(),
+                    'subjects': JSON.stringify(customSubjects),
+                },
+                function(data) {
+                    $('#ltl-input').val(data.ltl);
+                    $('.update_text').hide();
+                }
+            );
+        }, UPDATE_WAIT);
     });
 
     function updateExamplesToIndex(i) {

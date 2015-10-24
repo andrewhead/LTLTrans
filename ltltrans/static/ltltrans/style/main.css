@@ -130,6 +130,15 @@ textarea {
   width: 100%;
 }
 
+p.update_text {
+  position: absolute;
+  top: 0px;
+  right: 5px;
+  color: grey;
+  font-size: 20px;
+  display: none;
+}
+
 div.form {
   display: table;
   width: 100%;
@@ -150,6 +159,7 @@ div.label-cont {
 
 div.cols div:nth-child(2) {
   display: table-cell;
+  position: relative;
   padding: 3px 0;
   vertical-align: middle;
   width: 85%;

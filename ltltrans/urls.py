@@ -26,4 +26,5 @@ urlpatterns = [
     url(r'^english_to_ltl$', views.english_to_ltl, name='english_to_ltl'),
     url(r'^ltl_to_english$', views.ltl_to_english, name='ltl_to_english'),
     url(r'^hello_world$', views.hello_world, name='hello_world'),
+    url(r'^report_error$', views.report_error, name='report_error'),
 ]
