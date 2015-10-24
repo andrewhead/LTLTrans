@@ -13,17 +13,18 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 class GetLtlTest(unittest.TestCase):
 
+    def setUp(self):
+        self.client = Client()
+
     def testGetLtl(self):
-        pass
-        """
-        client = Client()
-        resp = client.get('/english_to_ltl', {
-            'sentence': 'The robot moves infinitely often',
-            'variables': {
-                'm': 'The robot moves.',
-            },
+        resp = self.client.post('/english_to_ltl', {
+            'sentence': "The robot moves infinitely often",
+            'proposition': 's0',
+            'subjects': json.dumps([[
+                {'letter': 'r', 'subject': 'the robot', 'verb': 'move', 'object': ''},
+            ]]),
         })
-        print resp.__dict__
         data = json.loads(resp.content)
-        self.assertEqual(data, {'ltl': 'GFm'})
-        """
+        self.assertEqual(data, {
+            'ltl': "G F r"
+        })

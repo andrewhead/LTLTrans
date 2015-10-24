@@ -15,23 +15,25 @@ class GetEnglishFromLtlTest(unittest.TestCase):
 
     def test_get_english_for_proposition(self):
         client = Client()
-        resp = client.get('/ltl_to_english', {
-            'ltl': 'P',
-            'propositions': json.dumps([
-                {'subject': "the robot", 'verb': "moves", 'object': ""},
-            ]),
+        resp = client.post('/ltl_to_english', {
+            'formula': 'p',
+            'proposition': 's0',
+            'subjects': json.dumps([[
+                {'letter': 'p', 'subject': 'the robot', 'verb': 'move', 'object': ''}
+            ]]),
         })
         data = json.loads(resp.content)
         self.assertIn("Currently, the robot moves", data['sentence'])
 
     def test_get_english_for_binary_op(self):
         client = Client()
-        resp = client.get('/ltl_to_english', {
-            'ltl': 'P -> Q',
-            'propositions': json.dumps([
-                {'subject': "the robot", 'verb': "moves", 'object': ""},
-                {'subject': "the light", 'verb': "summons", 'object': "the doctor"},
-            ]),
+        resp = client.post('/ltl_to_english', {
+            'formula': 'p -> d',
+            'proposition': 's0',
+            'subjects': json.dumps([[
+                {'letter': 'p', 'subject': 'the robot', 'verb': 'move', 'object': ''},
+                {'letter': 'd', 'subject': 'the light', 'verb': 'summon', 'object': 'the doctor'},
+            ]]),
         })
         data = json.loads(resp.content)
         self.assertIn(

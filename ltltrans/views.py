@@ -3,18 +3,17 @@
 
 from __future__ import unicode_literals
 import logging
-import StringIO
 import json
-import ast
 from time import strftime
 import time
 from py4j.java_gateway import JavaGateway, GatewayParameters
+from StringIO import StringIO
 
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.conf import settings
 
-from ltltrans.converter import Converter
+from ltltrans.englishparser.translator import translate
 from ltltrans.ltlparser.ltl_parser import LtlDictBuilder
 
 
@@ -114,27 +113,33 @@ def home(request):
     return render(request, 'ltltrans/home.html', context)
 
 
+def get_propositions(propname, defaults, custom):
+    if propname.startswith('s'):
+        prop_index = int(propname.replace('s', ''))
+        props = custom[prop_index]
+    else:
+        prop_index = int(propname)
+        props = defaults[propname]['propositions']
+    return props
+
+
 def english_to_ltl(request):
 
     start_timestamp = strftime("%Y-%m-%d %H:%M:%S")
     start_time = time.time()
-    sentence = request.GET.get("sentence")
-    variables = ast.literal_eval(request.GET.get("variables"))
+    sentence = request.POST.get("sentence")
+    prop = request.POST.get('proposition')
+    custom_subjects = json.loads(request.POST.get('subjects'))
+    props = get_propositions(prop, PROPOSITION_GROUPS, custom_subjects)
 
-    conv = Converter(sentence, [], False)
-    for v in variables.items():
-        # print "vars", v[0], v[1]
-        conv.add_variable(v[0], v[1])
+    statement = translate(sentence, props)
+    buff = StringIO()
+    statement.print_statement(buff, True)
+    ltl = buff.getvalue()
 
-    ltl_trans = conv.get_statement()
-    if len(ltl_trans) == 0:
-        ltl_string = "LTL description could not be translated. " +\
+    if len(ltl) == 0:
+        ltl = "LTL description could not be translated. " +\
             "Perhaps it is too complex of a statement."
-    else:
-        buff = StringIO.StringIO()
-        ltl_trans[0].print_statement(buff)
-        ltl_string = buff.getvalue()
-        buff.close()
 
     request_logger.info(
         "Visited 'english_to_ltl'. IP: %s,,, Start Time: %s,,, Execution Time: %f,,, " +
@@ -143,12 +148,12 @@ def english_to_ltl(request):
         start_timestamp,
         time.time() - start_time,
         sentence,
-        json.dumps(variables),
-        ltl_string,
+        json.dumps(props),
+        ltl,
         )
 
     return HttpResponse(json.dumps({
-        'ltl': ltl_string,
+        'ltl': ltl,
     }))
 
 
@@ -159,13 +164,7 @@ def ltl_to_english(request):
     ltl = request.POST.get('formula')
     prop = request.POST.get('proposition')
     custom_subjects = json.loads(request.POST.get('subjects'))
-
-    if prop.startswith('s'):
-        prop_index = int(prop.replace('s', ''))
-        props = custom_subjects[prop_index]
-    else:
-        prop_index = int(prop)
-        props = PROPOSITION_GROUPS[prop_index]['propositions']
+    props = get_propositions(prop, PROPOSITION_GROUPS, custom_subjects)
 
     dict_builder = LtlDictBuilder()
     res = dict_builder.to_dict(ltl)

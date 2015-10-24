@@ -1,6 +1,6 @@
 from ltl_formula import *
 from nltk.corpus import wordnet as wn
-import stanfordparser
+from ltltrans.englishparser import stanfordparser
 import re
 from nltk.stem import WordNetLemmatizer
 import nltk.tokenize 
@@ -15,7 +15,8 @@ def show_deps(sentence):
         return "No, you're not."
     s = stanfordparser.parse_sentence(sentence)
     for t in s:
-        print t.name, t.governor, t.dependent
+        pass
+        # print t.name, t.governor, t.dependent
 
 #class Replacement:
 #    def __init__(self, new_formula = False, next_rules = []):
@@ -45,14 +46,14 @@ class Dnode:
         return False            
     def print_dnode(self):
         if not self.dependents:
-            print self.governor,
+            # print self.governor,
             return
-        print "[", self.governor, ": ",
+        # print "[", self.governor, ": ",
         for d in self.dependents:
-            print "(",d[1], ",",
+            # print "(",d[1], ",",
             d[0].print_dnode()
-            print ")",
-        print "]",
+            # print ")",
+        # print "]",
     def get_relations(self):
         if not self.dependents:
             return set([])
@@ -66,18 +67,18 @@ class Dnode:
         if not nums_to_words:
             return replacement
         trace_map = {}
-        print "replacement", replacement, nums_to_words, self
+        # print "replacement", replacement, nums_to_words, self
         for i in nums_to_words:
             d = self.find_dnode(nums_to_words[i])
-            print i,"dnode",d, d.governor, nums_to_words[i]
-            print d.get_relations()
+            # print i,"dnode",d, d.governor, nums_to_words[i]
+            # print d.get_relations()
             trace_map[i] = d.apply_rules(rules, index, "trace")
             if not trace_map[i]:
                 return False
-            print "map:",i, trace_map[i]
-        print "map & replacement", trace_map, replacement
+            # print "map:",i, trace_map[i]
+        # print "map & replacement", trace_map, replacement
         r = re.sub("([0-9])", lambda m: trace_map[int(m.group(1))], replacement)
-        print "returning:", r
+        # print "returning:", r
         trace_map.clear()
         return r
     def get_ltl_from_match(self, replacements, nums_to_words, root_word, rules, index, multi_trans = False, applied_rules = set([])):
@@ -85,8 +86,11 @@ class Dnode:
         if len(nums_to_words) == 0:
             for r in replacements:
                 vrbls = r.get_variables() #remove 3 lines once it works
-                for v in vrbls:
-                    assert(type(v.variable) == str)
+                # print "variables:",vrbls
+                #for v in vrbls: #MAYBE PUT THIS SHIT BACK IN?
+#                    print v.variable
+#                    print "type:", v.variable,"space", v, "\n"
+#                    assert(type(v.variable) == str)
                 new_ltl = Statement()
                 new_ltl.copy(r)
                 #print new_ltl
@@ -175,11 +179,13 @@ class Dnode:
                 #print "Match found:", matches, rules[index].requirements
                 new_applied_rules = new_applied_rules.union(set([rules[index]]))
                 if replacement_type == "ltl":
+                    # print "rule:",rules[index], rules[index].requirements, rules[index].replacements
                     return self.get_ltl_from_match(rules[index].replacements, matches, self.governor, rules, index + 1, multi_translations, new_applied_rules)
                 elif replacement_type == "trace":
                     return self.get_trace_from_match(rules[index].replacements, matches, self.governor, rules, index + 1)
                 else:
-                    print "error: please give ltl or trace"
+                    pass
+                    # print "error: please give ltl or trace"
             #print "No match found:", rules[index].requirements
             index += 1
         return []
@@ -207,7 +213,7 @@ class DRule(object):
         elif type(neg_rules) == set:
             self.negative_rules = neg_rules
         else:
-            print "incorrect set of negative rules was supplied."
+            # print "incorrect set of negative rules was supplied."
             self.negative_rules = set([])
         for r in req:
             self.add_requirement(r)
@@ -218,8 +224,9 @@ class DRule(object):
         elif type(rep) == type(Statement()) or type(rep) == str:
             self.replacements = [rep]
         else:
+            pass
             #print rep
-            print "Error: please provide valid replacement formula"
+            # print "Error: please provide valid replacement formula"
     def add_requirement(self, req):
         new_req = [False]*3
         for i in range(0, 3):
@@ -230,7 +237,7 @@ class DRule(object):
         if len(req) == 3 or req[3]: #guarantees that negative requirements always come after positive requirements
             self.requirements.append((new_req[0], new_req[1], new_req[2], True))
         else:
-            print "negative requirement is given"
+            # print "negative requirement is given"
             self.requirements = [(new_req[0], new_req[1], new_req[2], False)] + self.requirements
     #helper function to find_match
     def make_regex(self,req, nums_to_words):
@@ -380,7 +387,8 @@ class Converter:
         self.multiple_translations = multi_translations
         relations = stanfordparser.parse_sentence(sentence)
         for r in relations:
-            print r.name, r.governor, r.dependent
+            # print r.name, r.governor, r.dependent
+            pass
 
         #assembles part of speech map
         pos_map = {}
@@ -418,13 +426,21 @@ class Converter:
         new_sentence = re.sub("we'd", "we would", new_sentence, flags=re.IGNORECASE)
         return new_sentence
 
+    def add_variable(self, name, description):
+        # print "THE NAME AND DESCRIPTION", name, description
+        # print "UND TYPES", type(name), type(description)
+        conv = Converter(description, [])
+        temp_rule = DRule([("nsubj",[1],[2], True)], Var(1))
+        match = temp_rule.find_match(conv.wordmap["ROOT-0"])
+        # print "le match:", match
         
-    def add_variable(self, name, description): 
-        temp = Converter(str(description), [])
-        amap = DRule([("nsubj",1,2)], Statement()).find_match(temp.wordmap["ROOT-0"])
-        print "amap", amap
-        if amap:
-            self.prop_vars.append(DRule([("nsubj",str(amap[1].split("-")[0]),str(amap[2].split("-")[0]))], Var(name)))
+ #   def add_variable(self, name, description): 
+#        temp = Converter(str(description), [])
+#        print temp.wordmap
+#        amap = DRule([("nsubj",1,2)], Statement()).find_match(temp.wordmap["ROOT-0"])
+#        print "amap", amap
+#        if amap:
+#            self.prop_vars.append(DRule([("nsubj",str(amap[1].split("-")[0]),str(amap[2].split("-")[0]))], Var(name)))
     def get_statement(self, replacement_type = "ltl"): #Returns the LTL statement corresponding to the given English sentence
         current_statements = []
         for d in self.wordmap["ROOT-0"].dependents:
@@ -440,7 +456,7 @@ class Converter:
             if current_statements:
                 new_statements = []
                 for p in itertools.product(*[current_statement, ltl_statements]):
-                    print "p is", p
+                    # print "p is", p
                     new_statements.append(And(p[0], p[1]))
                 current_statements = new_statements
             else:
@@ -556,12 +572,12 @@ sentence = raw_input("What would you like to parse?: ")
 variables = []
 while True:
     var = raw_input("Define a variable as 'type,governor,dependent': ")
-    print var
+    # print var
     if var == "done":
         break
     m = var.split(",")
     var_name = raw_input("name this variable: ")
-    print m[0],m[1],m[2]
+    # print m[0],m[1],m[2]
     variables += [DRule([(m[0], m[1], m[2])], Var(var_name))]
 #print variables
 #c = Converter(sentence, variables)
@@ -579,11 +595,12 @@ def run(sentence = "If the robot kills, it loves"):
             break
         m = var.split(":")
         m[1]= m[1].strip()
-        print m[0],m[1]d
+        # print m[0],m[1]d
         c.add_variable(m[0],m[1])
     for p in c.prop_vars:
-        print "k",p.requirements
-    print "prop_Vars", c.prop_vars
+        pass
+        # print "k",p.requirements
+    # print "prop_Vars", c.prop_vars
     """
    # c.prop_vars = [DRule([("nsubj","move",0)],Var("m")),DRule([("nsubj","flash",0)],Var("f"))]
     c.prop_vars = [VarRule(Var("c"),"chew"), VarRule(Var("k"),"kick")]
@@ -624,21 +641,26 @@ Trace_Rules = [
     DRule([("neg", 1, ["not","n't"])], "~1")
     ]
 """
-print "A"
+# print "A"
 VAR = VarRule(Var("m"), "move", noun = "robot")
 c = Converter("The robot will move.", [VAR], LTL_Rules)
 r = c.get_statement()
-print "Translations:"
+# print "Translations:"
 for a in r:
     a.print_statement()
-    print ""
+    # print ""
 """
 #class TraceRule(DRule):
 #    pass
 
 #class TraceConverter(Converter):
  #   def get_trace
-            
+
+def test():
+    c = Converter("The robot always moves.", [VarRule(Var("m"),"move",noun = "robot")])
+    r = c.get_statement()
+    print r
+                
 def print_ltl(ltl_statements):
     if not ltl_statements:
         print "No translations"

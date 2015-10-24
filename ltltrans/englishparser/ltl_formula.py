@@ -5,7 +5,7 @@ import logging
 import yaml
 
 random.seed()
-bool_opers = ["&", "|", "->", "<->"]
+bool_opers = ["^", "v", "->", "<->"]
 un_temp_opers = ["F", "G", "X"]
 bin_temp_opers = ["U", "W"]
 
@@ -97,7 +97,7 @@ class Statement(object):
             self.right_substatement.print_statement(outf, spaced)
             outf.write(")")
     def distribute_negatives(self, opers = bin_temp_opers + bool_opers + un_temp_opers):
-        negative_operator = {"&":"|", "|":"&", "U":"R", "R":"U", "F":"G", "G":"F", "X":"X"} #Figure out what to do for W
+        negative_operator = {"^":"v", "v":"^", "U":"R", "R":"U", "F":"G", "G":"F", "X":"X"} #Figure out what to do for W
         if self.variable:
             return
         if self.is_negative:
@@ -105,7 +105,7 @@ class Statement(object):
             if self.operator in opers:
                 if self.operator == "->":
                     self.right_substatement.is_negative = not self.right_substatement.is_negative
-                    self.operator = "&"
+                    self.operator = "^"
                 else:
                     if self.right_substatement:
                         self.right_substatement.is_negative = not self.right_substatement.is_negative
@@ -143,11 +143,11 @@ class Statement(object):
                 sentence += "at until "
             elif self.operator == "W": 
                 sentence += " at least until " #may not be best way to do it
-            elif self.operator == "&":
+            elif self.operator == "^":
                 sentence += " and "
             elif self.operator == "->":
                 sentence += " implies "
-            elif self.operator == "|":
+            elif self.operator == "v":
                 sentence += " or "
             else:
                 sentence += self.operator
@@ -207,11 +207,11 @@ class Statement(object):
                 sentence += " until " #may not be best way to do it
                 sentence + right_sent
                 sentence += " which may not occur "
-            elif self.operator == "&" and not self.is_negative:
+            elif self.operator == "^" and not self.is_negative:
                 sentence += left_sent
                 sentence += " and "
                 sentence += right_sent
-            elif self.operator == "&" and self.is_negative:
+            elif self.operator == "^" and self.is_negative:
                 sentence += " it is not the case that both "
                 sentence += left_sent
                 sentence += " and "
@@ -221,11 +221,11 @@ class Statement(object):
                 sentence += left_sent
                 sentence += " then "
                 sentence += right_sent
-            elif self.operator == "|" and not self.is_negative:
+            elif self.operator == "v" and not self.is_negative:
                 sentence += left_sent
                 sentence += " or "
                 sentence += right_sent
-            elif self.operator == "|" and self.is_negative:
+            elif self.operator == "v" and self.is_negative:
                 sentence += " neither "
                 sentence += left_sent
                 sentence += " nor "
@@ -238,7 +238,7 @@ class Statement(object):
             return "ERROR"
         return sentence
     def get_yaml_dict(self, vars_to_ints):
-        ops_to_keywords = {"G":"global", "F":"future", "X":"next", "&":"and", "|":"or", "->":"implies", "U":"until"}
+        ops_to_keywords = {"G":"global", "F":"future", "X":"next", "^":"and", "v":"or", "->":"implies", "U":"until"}
         return_value = {}
         #return {'unop':{'type':'not', 'arg':self.vars_to_ints[variable]}}
         if self.variable:
@@ -274,16 +274,16 @@ def NegVar(var_name):
     return Statement(var = var_name, neg = True)
 
 def And(s1, s2):
-    return Statement(oper = "&", left = s1, right = s2)
+    return Statement(oper = "^", left = s1, right = s2)
 
 def Nand(s1, s2):
-    return Statement(oper = "&", left = s1, right = s2, neg = True)
+    return Statement(oper = "^", left = s1, right = s2, neg = True)
 
 def Or(s1, s2):
-    return Statement(oper = "|", left = s1, right = s2)
+    return Statement(oper = "v", left = s1, right = s2)
 
 def Nor(s1, s2):
-    return Statement(oper = "|", left = s1, right = s2, neg = True)
+    return Statement(oper = "v", left = s1, right = s2, neg = True)
 
 def If(s1, s2):
     return Statement(oper = "->", left = s1, right = s2)
@@ -354,7 +354,7 @@ def FillTemplates(temp, unary_operators, binary_operators, neg_prob = 0):
     s.left_substatement = FillTemplates(temp.left_substatement, unary_operators, binary_operators, neg_prob)
     s.right_substatement = FillTemplates(temp.right_substatement, unary_operators, binary_operators, neg_prob)
     if temp.operator == "bool":
-        s.operator = random.choice(["&","|","->"])
+        s.operator = random.choice(["^","v","->"])
     elif temp.operator == "untemp":
         if not unary_operators:
             print "error: no valid unary temporal operators were provided"
