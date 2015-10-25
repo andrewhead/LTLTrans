@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 
 # Security
 
-SECRET_KEY_FILE = "/etc/django/tutorons.key"
+SECRET_KEY_FILE = "/etc/django/ltltrans.key"
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
