@@ -113,6 +113,7 @@ function init() {
     // Enable users to add new subjects
     $('#add_subj_button').on('click', function(e) {
         $('#add_subj_cont').addClass('show');
+        $('#prop-error-text').hide();
         e.preventDefault();
     });
 
@@ -139,6 +140,9 @@ function init() {
     }
 
     $('#add_prop_button').on('click', function(e) {
+
+        $('#prop-error-text').hide();
+
         function getVal(selector) {
             var allEmpty = true;
             $('input[type="text"]').each(function() {
@@ -152,14 +156,21 @@ function init() {
             }
             return $(selector).attr('placeholder');
         }
-        var prop = {
-            'letter': getVal('#symbol_input'),
-            'subject': getVal('#subject_input'),
-            'verb': getVal('#verb_input'),
-            'object': getVal('#object_input'),
-        };
-        propositions.push(prop);
-        updatePropositionList(propositions);
+
+        var sym = getVal('#symbol_input');
+        if (sym.length !== 1 || sym === 'G' || sym === 'F' || sym === 'X' || sym === 'U') {
+            $('#prop-error-text').show();
+        } else {
+            var prop = {
+                'letter': getVal('#symbol_input'),
+                'subject': getVal('#subject_input'),
+                'verb': getVal('#verb_input'),
+                'object': getVal('#object_input'),
+            };
+            propositions.push(prop);
+            updatePropositionList(propositions);
+        }
+
         e.preventDefault();
     });
 

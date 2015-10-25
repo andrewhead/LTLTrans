@@ -104,11 +104,19 @@ input[type='text']:first-of-type {
 }
 
 #symbol_input {
-  width: 1em;
+  width: 1.5em;
 }
 
 #subject_input, #verb_input, #object_input {
   width: 8em;
+}
+
+p#prop-error-text {
+  color: #ff4444;
+  margin: 0;
+  margin-bottom: 5px;
+  font-size: 14px;
+  display: none;
 }
 
 #save_subj_button {
