@@ -77,7 +77,7 @@ p.body {
   margin-bottom: .5ex;
 }
 
-select {
+#prop-select {
   width: 90%;
 }
 
@@ -160,6 +160,26 @@ p.error_text {
   width: 100%;
 }
 
+#report-details-cont {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  border: 1px dashed grey;
+  padding: 10px;
+  display: none;
+}
+
+#cause-select {
+  width: 90%;
+}
+
+#suggestion-text {
+  width: 98%;
+}
+
+#submit_report_button {
+  width: 100%;
+}
+
 #thanks-text {
   background-color: #eeeeff;
   border: 1px dashed grey;
@@ -185,7 +205,7 @@ div.cols {
   display: table-row;
 }
 
-div.cols div:nth-child(1) {
+div.cols > div:nth-child(1) {
   display: table-cell;
   width: 15%;
 }
@@ -194,7 +214,7 @@ div.label-cont {
   vertical-align: middle;
 }
 
-div.cols div:nth-child(2) {
+div.cols > div:nth-child(2) {
   display: table-cell;
   position: relative;
   padding: 10px 0;

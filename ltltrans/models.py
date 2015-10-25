@@ -16,6 +16,8 @@ class ErrorReport(models.Model):
     ipAddr = models.CharField(max_length=32, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     propositions = models.CharField(max_length=300)
+    errorType = models.CharField(max_length=64)
+    suggestion = models.CharField(max_length=300)
 
 
 class LoadPageEvent(models.Model):

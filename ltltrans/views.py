@@ -193,5 +193,7 @@ def report_error(request):
         ltl=request.POST.get('formula'),
         propositions=json.dumps(props),
         ipAddr=get_real_ip(request),
+        errorType=request.POST.get('error-type'),
+        suggestion=request.POST.get('suggestion'),
     )
     return HttpResponse()

@@ -80,8 +80,17 @@
                     </div>
                     <div class='cols'>
                         <div class='label-cont'></div>
-                        <div>
-                            <button id='report_button'>Report Bad / Failed Translation</button>
+                            <div>
+                                <button id='report_button'>Report Bad / Failed Translation</button>
+                                <div id='report-details-cont'>
+                                <label id='cause-label'>Cause:</label>
+                                <select id='cause-select'>
+                                    <option value='bad-ltl'>I'm not satisifed with the LTL produced</option>
+                                    <option value='bad-english'>I'm not satisfied with the English produced</option>
+                                </select>
+                                <input type='text' id='suggestion-text' placeholder="Suggest a better translation"/>
+                                <button id='submit_report_button'>Submit</button>
+                            </div>
                             <p id='thanks-text'>Thank you!</p>
                             <p id='contact-text'><a href="mailto:ltltranslator@gmail.com">Contact the authors</a></p>
                         </div>
