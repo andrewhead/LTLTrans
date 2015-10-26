@@ -33,20 +33,32 @@
 - name: Create project directory
   file: state=directory path={{ projectdir }} owner=ubuntu
   sudo: true
+  tags: directories
 
 - name: Create static directory
   file: state=directory path={{ scriptdir }} owner=ubuntu
+  tags: directories
 
 - name: Create static files directory
   file: state=directory path={{ staticdir }} owner=ubuntu
+  tags: directories
 
 - name: Create folder for uploadable libraries and content
   file: state=directory path=/var/www/{{ appname }} owner=ubuntu
+  sudo: true
+  tags: directories
 
 - name: Create log file
   file: state=touch path={{ logfile }} owner=ubuntu
   sudo: true
   when: logfile is defined
+
+- name: Create all other user directories
+  file: state=directory path={{ item }} owner=ubuntu
+  sudo: true
+  with_items: user_directories
+  when: user_directories is defined
+  tags: directories
 
 - name: Install virtualenv
   pip: name=virtualenv
@@ -134,7 +146,7 @@
   when: staticfiles is defined
   tags: updatecode
 
-- name: Transfer setup scripts
+- name: Transfer bash setup scripts
   template: src={{ item }}.j2 dest={{ scriptdir }}/{{ item }}.sh
   with_items: scripts
   when: scripts is defined
@@ -144,6 +156,18 @@
   command: /bin/bash {{ item }}.sh chdir={{ scriptdir }}
   with_items: scripts
   when: scripts is defined
+  tags: scripts
+
+- name: Transfer Python setup scripts
+  copy: src={{ item }} dest={{ scriptdir }}
+  with_items: python_scripts
+  when: python_scripts is defined
+  tags: scripts
+
+- name: Run Python setup scripts
+  command: "{{ venv }}/bin/python {{ scriptdir }}/{{ item }}"
+  with_items: python_scripts
+  when: python_scripts is defined
   tags: scripts
 
 - name: Make sure memcached is running
