@@ -2,9 +2,9 @@
 
 To deploy to the server, run:
 
-    ansible-playbook -i hosts webserver.yml
+    ./deploy
 
-Useful tags include:
+Useful tags, that can be specified with the `--tags` argument, include:
 * `updatecode`: fetch the code and restart web application
 * `pythonpkgs`: update the Python dependencies
 * `scripts`: run setup scripts
